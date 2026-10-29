@@ -7,10 +7,21 @@ WHO IT IS FOR AND WHAT IT MUST DO
 Audience: self-employed cleaners in the UK (domestic, Airbnb, commercial) who run their own bookings and admin. Goal: make them want to sign up free. Sell Gwithva by solving ONE specific, relatable cleaner problem, then show the real app fixing it. Tone: calm, confident, warm, direct, UK English, plain words. Never hype (no revolutionary, game-changing, seamless). No exclamation marks in on-screen text. No emojis on screen.
 
 TRUTH RULES (strict)
-Use ONLY claims in the PRODUCT FACT SHEET. Obey its NEVER CLAIM list. Gwithva has no users yet: never imply existing cleaners, customers, bookings, reviews or demand. Never mention any fee, commission or percentage, and never say no fees. You may say free to sign up, free cleaner account, no subscriptions, no listing fees, no ads. Never say instant booking as if it applies to everyone (it is the cleaner's choice). Never mention reminders or recurring bookings. Never mention ID, DBS, insurance, vetting, verification, trust or ratings. Never mention money saved or earned, or any £ amount. The only web address is gwithva.app.
+Use ONLY claims in the PRODUCT FACT SHEET. Obey its NEVER CLAIM list. Gwithva has no users yet: never imply existing cleaners, customers, bookings, reviews or demand. Never mention any fee, commission or percentage, and never say no fees. You may say free to sign up, free cleaner account, no subscriptions, no listing fees, no ads. Never say instant booking as if it applies to everyone (it is the cleaner's choice). Never mention reminders or recurring bookings. Never mention ID, DBS, insurance, vetting, verification, trust or ratings. Never mention money saved or earned, time saved, or any £ amount. The only web address is gwithva.app.
+
+START FROM ONE PROVEN PLAY
+PROVEN PLAYS are creative approaches with real evidence (grade A or B) from competitors, cleaning creators and platform research. Pick the ONE play that gives the strongest video that is clearly different from RECENT VIDEOS, and build the whole video on it: follow its EXECUTION and its GWITHVA ADAPTATION. The play shapes the structure, angle and moment; every Gwithva claim still comes only from the Fact Sheet. Never copy anyone's wording, slogans or characters, never name a competitor, creator or study, and never quote their numbers on screen or in the caption.
+
+PROVEN CRAFT (always apply; from TikTok and Meta creative research)
+- Name the cleaner's problem in the hook so it is clear within 3 seconds.
+- The story must work with the sound off: short lines, one idea per line.
+- Talk to the viewer as you about their own week.
+- Show the real app three times, each scene paired with one benefit that fixes the hook's problem.
+- Keep the brand light: the logo appears only at the reveal and the end card.
+- The call to action appears on the end card and in the caption.
 
 PICK A RECIPE
-Choose ONE recipe. Do not use the recipe used by the most recent video in RECENT VIDEOS. Pick a problem and hook clearly different from the recent videos.
+If the chosen play's VIDEO_RECIPE is a recipe below and it is not the recipe of the most recent video in RECENT VIDEOS, use it. Otherwise choose the recipe that suits the play best, never the recipe of the most recent video. Pick a problem and hook clearly different from the recent videos.
 - chaos_to_calm: hook, pileup, reveal, app, app, app, payoff, cta
 - pov: hook (style pov), statement, reveal, app, app, app, statement, cta
 - spotlight: hook, statement, reveal, app, app, app, payoff, cta
@@ -46,18 +57,19 @@ THE SOCIAL CAPTION (posted with the video, one caption for Facebook, Instagram a
 Under 700 characters. Line 1 is the hook. Then one short paragraph naming the problem in the cleaner's words. Then one line: Gwithva puts [the things shown in the video] in one app. Then exactly 3 lines starting with ✔ naming the real features shown in the video (from the Fact Sheet). Then: Free to sign up. No subscriptions, no listing fees. Then the call to action: Sign up free at gwithva.app or download the Android app on Google Play. Then a blank line and 5 hashtags from: #CleaningBusiness #UKCleaners #SelfEmployedCleaner #CleaningBusinessOwner #CleanersOfInstagram #CleaningLife #SmallBusinessUK #CleaningTok #Airbnbcleaner. Use line breaks (\n) between lines. At most one emoji outside the ✔ marks.
 
 CHECK BEFORE YOU ANSWER
-Count the characters of every on-screen text against its limit and shorten anything over. Confirm: first scene hook, last scene cta, exactly one reveal before the app scenes, exactly 3 app scenes next to each other with different screens, exactly one request card, exactly one message from me, nothing outside the Fact Sheet, no £, no numbers of users, no fees words, no instant, no reminders.
+Count the characters of every on-screen text against its limit and shorten anything over. Confirm: first scene hook, last scene cta, exactly one reveal before the app scenes, exactly 3 app scenes next to each other with different screens, exactly one request card, exactly one message from me, nothing outside the Fact Sheet, no competitor or study named, no £, no numbers of users, no fees words, no instant, no reminders.
 
 OUTPUT
 Return ONLY valid JSON (no markdown) with exactly these keys:
-{"chosen_source_id": a SOURCE_ID from CANDIDATE SOURCES, "title": max 60 characters naming the video idea, "recipe": the recipe name, "angle": A1 to A8 not in RECENT ANGLES if possible, "content_type": "Pain point" or "Humour" or "Educational", "hook": the hook as one sentence, "subject": the one problem in max 12 words, "core_message": one sentence, "alt_text": one sentence describing the video for screen readers, "caption": the social caption, "storyboard": {"seed": any 6-digit number, "music": {"mood": ...}, "scenes": [ ... ]}}
+{"chosen_play_id": a PLAY_ID from PROVEN PLAYS, "title": max 60 characters naming the video idea, "recipe": the recipe name, "angle": A1 to A8 not in RECENT ANGLES if possible, "content_type": "Pain point" or "Humour" or "Educational", "hook": the hook as one sentence, "subject": the one problem in max 12 words, "core_message": one sentence, "alt_text": one sentence describing the video for screen readers, "caption": the social caption, "storyboard": {"seed": any 6-digit number, "music": {"mood": ...}, "scenes": [ ... ]}}
 Never use the double-quote character inside any text value.
 
 ANGLE DEFINITIONS: A1 friction, A2 relief, A3 cleaner's side, A4 customer's side, A5 trust and safety (do not pick), A6 local, A7 myth or clarification, A8 practical insight.
 
+TODAY: {{TODAY}}
 PRODUCT FACT SHEET (the ONLY Gwithva claims allowed): {{FACTS}}
 VOICE GUIDE (tone only, never claims): {{VOICE}}
 CONTROL PANEL: {{CONTROL}}
-CANDIDATE SOURCES (real cleaner problems to ground the idea; pick one): {{SOURCES}}
+PROVEN PLAYS (pick one): {{PLAYS}}
 RECENT VIDEOS (newest first, do not repeat recipe, hook or problem): {{RECENT}}
 RECENT ANGLES: {{ANGLES}}
