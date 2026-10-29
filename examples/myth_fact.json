@@ -1,0 +1,10 @@
+{"id":"example-myth","seed":424242,"music":{"mood":"driving"},
+"scenes":[
+ {"type":"hook","style":"statement","lines":["Still arranging cleans","by text at 10pm?"],"punch":"There's a better way."},
+ {"type":"statement","kicker":"Myth","lines":["Clients won't book","online."],"bg":"cream"},
+ {"type":"statement","kicker":"Fact","lines":["Give them a link.","They pick a slot."],"bg":"peach"},
+ {"type":"reveal","tagline":"Your booking link, diary and messages."},
+ {"type":"app","screen":"share","caption":["Send your clients","one simple link."],"recent":{"day":"THU","date":"12","title":"Regular clean","who":"Ellie M.","time":"09:00 – 11:00"}},
+ {"type":"app","screen":"messages","caption":["Questions answered","without your number."],"client":"Ellie M.","messages":[{"from":"them","text":"Booked you for Thursday. Is parking OK on the drive?"},{"from":"me","text":"Perfect, yes the drive is fine. See you at 9."},{"from":"them","text":"Lovely, thanks."}]},
+ {"type":"app","screen":"diary","caption":["Every slot,","in your diary."],"entry":{"title":"Regular clean","who":"Ellie M.","time":"09:00 – 11:00"}},
+ {"type":"cta","button":"Sign up free at gwithva.app","sub":"Free cleaner account at gwithva.app"}]}

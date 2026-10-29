@@ -271,7 +271,7 @@ function init(spec){
   TL.forEach(x=>{const st=x.start;if(x.s.type==='appgroup'){cue(st,'whoosh');x.s.starts.forEach((s0,k)=>{if(k)cue(st+s0-OV,'swipe');const S=SCREENS[x.s.items[k].screen];if(S.cues)S.cues(st+s0,x.o.screens[k].so);});}
    else{if(x.s.type==='pileup')x.o.kinds=(x.s.notifications||[]).map(n=>n.kind);if(x.lib.cues)x.lib.cues(st,x.o);}});
   CUES.sort((a,b)=>a.t-b.t);
-  return {total:TOTAL,cues:CUES,problems:PROBLEMS,timeline:TL.map(x=>({type:x.s.type,start:+x.start.toFixed(2),dur:+x.dur.toFixed(2)}))};});
+  return {total:TOTAL,cues:CUES,problems:PROBLEMS,timeline:TL.map(x=>({type:x.s.type,start:+x.start.toFixed(2),dur:+x.dur.toFixed(2),screens:x.s.type==='appgroup'?x.s.items.map((it,k)=>({screen:it.screen,start:+(x.start+x.s.starts[k]).toFixed(2),dur:SCREENS[it.screen].dur})):undefined}))};});
 }
 function setTime(t){TL.forEach((x,i)=>{const lt=t-x.start,on=lt>=0&&lt<x.dur+.05&&!(TL[i+1]&&t>=TL[i+1].start+OV+.02&&!TL[i+1].lib.transparent&&TL[i+1].s.type!=='payoff'&&TL[i+1].s.type!=='cta');
   x.L.style.display=on||(i===TL.length-1&&lt>=0)?'block':'none';if(x.L.style.display==='none')return;

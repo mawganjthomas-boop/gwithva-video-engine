@@ -30,7 +30,17 @@ def main(spec_path, out):
         ff = subprocess.Popen(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', str(FPS), '-c:v', 'mjpeg', '-i', '-',
                                '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '20', '-pix_fmt', 'yuv420p', '-profile:v', 'high',
                                f'{out}/silent.mp4'], stdin=subprocess.PIPE)
-        sheet_ts = [round(meta['total'] * (k + .5) / 12, 2) for k in range(12)]
+        sheet_ts = []  # QC frames: each scene fully on screen, not mid-transition
+        for x in meta['timeline']:
+            if x['type'] == 'appgroup': sheet_ts += [round(sc['start'] + sc['dur'] * .8, 2) for sc in x['screens']]
+            elif x['type'] == 'pileup': sheet_ts += [round(x['start'] + 2.4, 2), round(x['start'] + 4.2, 2)]
+            elif x['type'] == 'cta': sheet_ts += [round(x['start'] + 1.9, 2), round(meta['total'] - .15, 2)]
+            else: sheet_ts.append(round(x['start'] + x['dur'] - .55, 2))
+        sheet_ts = sorted(set(sheet_ts))[:12]
+        hook_end = meta['timeline'][0]['start'] + meta['timeline'][0]['dur'] - .55
+        k = 1
+        while len(sheet_ts) < 12:  # pad with fully-written hook frames (the punch line lands by ~2.0s)
+            sheet_ts.insert(0, round(max(2.0, hook_end - .2 * k), 2)); k += 1
         cover_t = min(meta['total'] - 1, 2.9)
         for i in range(n):
             t = i / FPS

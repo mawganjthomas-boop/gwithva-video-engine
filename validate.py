@@ -24,7 +24,7 @@ BANNED_CLAIMS = [
     (r'\brevolution|\bgame[- ]chang|\bseamless\b|\bgroundbreaking\b', 'hype words'),
     (r'\bsocial (platform|network)\b', 'social platform'),
 ]
-FREE_OK = re.compile(r'\bfree (to sign up|cleaner account|account|slots?)\b', re.I)
+FREE_OK = re.compile(r'\bfree (to sign up|cleaner account|account|slots?)\b|\bsign up (for )?free\b', re.I)
 
 LIMITS = {  # max characters
     'hook.line': 26, 'hook.punch': 22, 'pileup.keyword': 20, 'pileup.block': 16, 'notif.title': 18, 'notif.body': 46,
