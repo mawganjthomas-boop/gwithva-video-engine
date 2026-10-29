@@ -1,0 +1,43 @@
+{
+  "ok": true,
+  "problems": [],
+  "total": 23.95,
+  "timeline": [
+    {
+      "type": "hook",
+      "start": 0,
+      "dur": 3.45
+    },
+    {
+      "type": "pileup",
+      "start": 3,
+      "dur": 5.1
+    },
+    {
+      "type": "reveal",
+      "start": 7.65,
+      "dur": 2
+    },
+    {
+      "type": "appgroup",
+      "start": 9.2,
+      "dur": 9.85
+    },
+    {
+      "type": "payoff",
+      "start": 18.6,
+      "dur": 2.5
+    },
+    {
+      "type": "cta",
+      "start": 20.65,
+      "dur": 2.9
+    }
+  ],
+  "music": {
+    "bpm": 99.4,
+    "mood": "warm",
+    "key_shift": 0
+  },
+  "bytes": 2953296
+}
