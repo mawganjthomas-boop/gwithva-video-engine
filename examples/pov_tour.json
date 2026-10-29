@@ -1,0 +1,14 @@
+{"id":"example-pov","seed":98765,"music":{"mood":"bright"},
+"scenes":[
+ {"type":"hook","style":"pov","lines":["Your clients book","your free slots"],"punch":"while you clean."},
+ {"type":"statement","kicker":"No more back and forth","lines":["They pick a slot.","You stay on the job."],"bg":"peach"},
+ {"type":"reveal","tagline":"Your booking link. Your diary. Your rules."},
+ {"type":"app","screen":"share","caption":["Share your link","with existing clients."],"recent":{"day":"WED","date":"4","title":"Regular clean","who":"New client","time":"10:00 – 12:00"}},
+ {"type":"app","screen":"bookings","caption":["Accept the requests","that suit you."],"cards":[
+   {"day":"WED","date":"4","title":"Regular clean","who":"Tom B.","time":"10:00 – 12:00","status":"request"},
+   {"day":"THU","date":"5","title":"Deep clean","who":"Laura K.","time":"09:00 – 13:00","status":"confirmed"},
+   {"day":"FRI","date":"6","title":"Airbnb turnover","who":"Mia C.","time":"11:00 – 13:00","status":"confirmed"},
+   {"day":"SAT","date":"7","title":"Oven clean","who":"Dan W.","time":"09:00 – 10:30","status":"confirmed"}]},
+ {"type":"app","screen":"diary","caption":["Holidays blocked","out once."],"entry":{"title":"Deep clean","who":"Laura K.","time":"09:00 – 13:00"}},
+ {"type":"statement","lines":["No subscriptions.","No listing fees."],"bg":"teal"},
+ {"type":"cta","button":"Explore Gwithva for cleaners","sub":"Free to sign up at gwithva.app"}]}

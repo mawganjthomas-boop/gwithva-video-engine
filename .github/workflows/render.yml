@@ -1,0 +1,119 @@
+name: Render Gwithva video
+
+# Make.com starts this (repository_dispatch, event "render") with:
+#   client_payload.page_id   - the Notion Approval Queue page
+#   client_payload.callback  - Make webhook to report back to
+#   client_payload.spec      - the storyboard JSON written by Claude
+on:
+  repository_dispatch:
+    types: [render]
+  workflow_dispatch:
+    inputs:
+      example:
+        description: "Example storyboard to test (file name in examples/)"
+        default: "chaos_to_calm.json"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: render
+  cancel-in-progress: false
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      PAGE_ID: ${{ github.event.client_payload.page_id || 'manual-test' }}
+      CALLBACK: ${{ github.event.client_payload.callback }}
+      SPEC_JSON: ${{ toJSON(github.event.client_payload.spec) }}
+      EXAMPLE: ${{ github.event.inputs.example }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install tools
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg > /dev/null
+          python -m pip install -q playwright==1.48.0 numpy scipy
+          python -m playwright install --with-deps chromium > /dev/null
+
+      - name: Write storyboard
+        run: |
+          python - <<'EOF'
+          import json, os
+          if os.environ.get('EXAMPLE') and (os.environ.get('SPEC_JSON') in (None, '', 'null')):
+              spec = json.load(open('examples/' + os.environ['EXAMPLE']))
+          else:
+              spec = json.loads(os.environ['SPEC_JSON'])
+              if isinstance(spec, str): spec = json.loads(spec)
+          json.dump(spec, open('spec.json', 'w'))
+          EOF
+
+      - name: Render
+        id: render
+        run: python render.py spec.json out || true
+
+      - name: Publish files
+        id: pub
+        run: |
+          python - <<'EOF'
+          import json, os, shutil, time
+          rep = json.load(open('out/report.json'))
+          ok = rep.get('ok')
+          dest = f"videos/{time.strftime('%Y%m%d-%H%M%S')}-{os.environ['PAGE_ID'][:8]}"
+          if ok:
+              os.makedirs(dest, exist_ok=True)
+              for f in ('video.mp4', 'cover.jpg', 'sheet.jpg', 'report.json'): shutil.copy(f'out/{f}', f'{dest}/{f}')
+              shutil.copy('spec.json', f'{dest}/storyboard.json')
+              # keep the repo small: only the newest 40 videos are kept
+              olds = sorted(d for d in os.listdir('videos') if os.path.isdir(f'videos/{d}'))[:-40]
+              for d in olds: shutil.rmtree(f'videos/{d}')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as g:
+              g.write(f"ok={'true' if ok else 'false'}\ndest={dest}\n")
+          EOF
+          if [ "$(grep '^ok=' $GITHUB_OUTPUT | tail -1 | cut -d= -f2)" = "true" ]; then
+            git config user.name "gwithva-video-engine"
+            git config user.email "actions@users.noreply.github.com"
+            git add -A videos && git commit -qm "Video for $PAGE_ID" && git pull -q --rebase && git push -q
+          fi
+
+      - name: Wait until the video is live
+        if: steps.pub.outputs.ok == 'true'
+        run: |
+          BASE="https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}"
+          URL="$BASE/${{ steps.pub.outputs.dest }}/video.mp4"
+          echo "BASE=$BASE" >> $GITHUB_ENV
+          for i in $(seq 1 40); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' -I "$URL"); echo "try $i: $code"
+            [ "$code" = "200" ] && break; sleep 15
+          done
+
+      - name: Report back to Make
+        if: always()
+        run: |
+          python - <<'EOF'
+          import json, os, urllib.request
+          cb = os.environ.get('CALLBACK')
+          rep = {}
+          try: rep = json.load(open('out/report.json'))
+          except Exception: rep = {'ok': False, 'problems': ['The render did not finish. See the run log.']}
+          dest = os.environ.get('DEST', '')
+          base = os.environ.get('BASE', '')
+          body = {'page_id': os.environ['PAGE_ID'], 'ok': bool(rep.get('ok')), 'run_url': os.environ['RUN_URL'],
+                  'problems': ' | '.join(rep.get('problems') or [])[:1800], 'total': rep.get('total')}
+          if rep.get('ok') and base:
+              for k in ('video', 'cover', 'sheet'):
+                  ext = 'mp4' if k == 'video' else 'jpg'
+                  body[f'{k}_url'] = f"{base}/{dest}/{k}.{ext}"
+          print(json.dumps(body, indent=2))
+          if cb:
+              req = urllib.request.Request(cb, data=json.dumps(body).encode(), headers={'Content-Type': 'application/json'})
+              print(urllib.request.urlopen(req, timeout=30).status)
+          EOF
+        env:
+          DEST: ${{ steps.pub.outputs.dest }}
