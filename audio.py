@@ -131,6 +131,7 @@ def render_audio(meta, spec, out_path):
         elif ty == 'sparkle': mx.add(bell(1046, 2.0), t, .09, -.2)
         elif ty == 'bell2': mx.add(bell(1568, 2.0), t, .06, .2)
         elif ty == 'flick': mx.add(whoosh(r, .25, 1500, 6000), t, .06, r.uniform(-.3, .3))
+        elif ty == 'shutter': mx.add(tick(r, 4200, .03), t, .4); mx.add(filt(noise(r, .12), 5000) * env(int(.12 * SR), .001, .05, 5), t + .03, .22)
         elif ty == 'tap': mx.add(tick(r, 2600, .03), t, .45)
         elif ty == 'success': mx.add(np.concatenate([sine(1046, .1, .002, .05, 4), sine(1568, .45, .002, .2, 4)]), t, .24)
         elif ty == 'pop': mx.add(sine(784, .2, .002, .08, 5, harm=((2, .3),)), t, .14)

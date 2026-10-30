@@ -1,0 +1,60 @@
+{
+  "ok": true,
+  "problems": [],
+  "total": 20.35,
+  "timeline": [
+    {
+      "type": "hook",
+      "start": 0,
+      "dur": 3.45,
+      "screens": null
+    },
+    {
+      "type": "compare",
+      "start": 3,
+      "dur": 3.4,
+      "screens": null
+    },
+    {
+      "type": "number",
+      "start": 5.95,
+      "dur": 2.8,
+      "screens": null
+    },
+    {
+      "type": "reveal",
+      "start": 8.3,
+      "dur": 2.6,
+      "screens": null
+    },
+    {
+      "type": "appgroup",
+      "start": 10.45,
+      "dur": 7.05,
+      "screens": [
+        {
+          "screen": "jobs",
+          "start": 10.8,
+          "dur": 3.2
+        },
+        {
+          "screen": "overview",
+          "start": 14,
+          "dur": 3.4
+        }
+      ]
+    },
+    {
+      "type": "cta",
+      "start": 17.05,
+      "dur": 2.9,
+      "screens": null
+    }
+  ],
+  "music": {
+    "bpm": 112.4,
+    "mood": "bright",
+    "key_shift": 0
+  },
+  "bytes": 1672336
+}

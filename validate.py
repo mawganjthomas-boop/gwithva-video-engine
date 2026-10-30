@@ -2,7 +2,8 @@
 and the reason goes back to Notion, so nothing off-brand or off-fact reaches the queue."""
 import re
 
-SCREENS = {'bookings', 'diary', 'messages', 'share'}
+SCREENS = {'bookings', 'diary', 'messages', 'share', 'expenses', 'overview', 'invoice', 'export', 'jobs'}
+FACT_SCENES = {'number', 'compare', 'timeline', 'checklist', 'countdown', 'scam', 'mythfact', 'qa'}
 NOTIF_KINDS = {'msg', 'call', 'bell', 'cal', 'note', 'email'}
 
 # Words that can never appear in scenes that talk about Gwithva (from the Fact Sheet NEVER CLAIM list).
@@ -30,12 +31,13 @@ LIMITS = {  # max characters
     'hook.line': 26, 'hook.punch': 22, 'pileup.keyword': 20, 'pileup.block': 16, 'notif.title': 18, 'notif.body': 46,
     'reveal.tagline': 44, 'caption': 22, 'statement.line': 20, 'statement.kicker': 28, 'payoff.line': 18,
     'cta.button': 30, 'cta.sub': 44, 'card.title': 22, 'card.who': 14, 'card.time': 13, 'msg': 64, 'client': 16,
-    'entry.title': 22,
+    'entry.title': 22, 'reveal.bridge': 40, 'fact.big': 8, 'fact.line': 26, 'fact.text': 60, 'fact.item': 24, 'row.title': 28, 'row.sub': 28,
 }
 
 
-def _claims(text, where, errs):
+def _claims(text, where, errs, pound_ok=False):
     t = (text or '')
+    if pound_ok: t = t.replace('£', '')
     for pat, why in BANNED_CLAIMS:
         if re.search(pat, t, re.I): errs.append(f'{where}: "{t}" breaks the Fact Sheet ({why})')
     if re.search(r'\bfree\b', t, re.I) and not FREE_OK.search(t):
@@ -62,7 +64,8 @@ def validate(spec):
     if len(apps) < 2 or len(apps) > 4: errs.append('use 2 to 4 "app" scenes')
     elif apps != list(range(apps[0], apps[0] + len(apps))): errs.append('"app" scenes must be next to each other')
     if 'reveal' in types and apps and types.index('reveal') > apps[0]: errs.append('"reveal" must come before the app scenes')
-    unknown = set(types) - {'hook', 'pileup', 'reveal', 'app', 'statement', 'payoff', 'cta'}
+    if sum(1 for t in types if t in FACT_SCENES) > 3: errs.append('at most three fact scenes (number, compare, timeline, checklist, countdown, scam, mythfact, qa)')
+    unknown = set(types) - {'hook', 'pileup', 'reveal', 'app', 'statement', 'payoff', 'cta'} - FACT_SCENES
     if unknown: errs.append(f'unknown scene types: {sorted(unknown)}')
     seen = set()
     for i, s in enumerate(sc):
@@ -86,6 +89,7 @@ def validate(spec):
                 if re.search(r'\b(bank details|sort code|password|pin)\b', n.get('body', ''), re.I): errs.append(f'{w}: avoid scam-looking messages ("{n.get("body")}")')
         elif ty == 'reveal':
             _len(s.get('tagline'), 'reveal.tagline', w, errs); _claims(s.get('tagline'), w, errs)
+            if s.get('bridge'): _len(s['bridge'], 'reveal.bridge', w, errs); _claims(s['bridge'], w, errs)
         elif ty == 'app':
             scr = s.get('screen')
             if scr not in SCREENS: errs.append(f'{w}: screen must be one of {sorted(SCREENS)}'); continue
@@ -114,10 +118,48 @@ def validate(spec):
                 for m in ms:
                     _len(m.get('text'), 'msg', w, errs)
                     if re.search(r'\d{5,}|@|https?://', m.get('text', '')): errs.append(f'{w}: no phone numbers, emails or links in messages')
+            elif scr in ('expenses', 'jobs'):
+                for r in (s.get('items') or []) + [s.get('added') or {}]:
+                    _len(r.get('title'), 'row.title', w, errs)
+                if not s.get('added'): errs.append(f'{w}: needs an "added" row (the one the viewer sees being added)')
+            elif scr == 'invoice':
+                _len(s.get('client'), 'client', w, errs); _len(s.get('item'), 'row.title', w, errs)
             elif scr == 'share':
                 r = s.get('recent') or {}
                 for k, lim in (('title', 'card.title'), ('who', 'card.who'), ('time', 'card.time')):
                     if r.get(k): _len(r.get(k), lim, w, errs)
+        elif ty in FACT_SCENES:
+            texts = []
+            if ty == 'number':
+                _len(s.get('big'), 'fact.big', w, errs); texts += [s.get('big')] + list(s.get('lines') or [])
+                for l in s.get('lines') or []: _len(l, 'fact.line', w, errs)
+            elif ty == 'compare':
+                for k in ('a', 'b'):
+                    r = s.get(k) or {}; _len(r.get('label'), 'fact.line', w, errs); texts += [r.get('label'), r.get('value')]
+                texts += [s.get('title'), s.get('verdict')]
+            elif ty == 'timeline':
+                pts = s.get('points') or []
+                if not 2 <= len(pts) <= 5: errs.append(f'{w}: 2-5 points')
+                for p in pts: _len(p.get('date'), 'fact.item', w, errs); texts += [p.get('date'), p.get('label')]
+                texts.append(s.get('title'))
+            elif ty == 'checklist':
+                its = s.get('items') or []
+                if not 2 <= len(its) <= 4: errs.append(f'{w}: 2-4 items')
+                for i2 in its: _len(i2, 'fact.item', w, errs)
+                texts += its + [s.get('title')]
+            elif ty == 'countdown':
+                if not re.fullmatch(r'[1-9]|[12]\d|3[01]', str(s.get('day', ''))): errs.append(f'{w}: day must be 1-31')
+                texts += [s.get('label'), s.get('kicker'), s.get('month')]
+            elif ty == 'scam':
+                texts += [s.get('stamp')]
+            elif ty == 'mythfact':
+                _len(s.get('myth'), 'fact.text', w, errs); _len(s.get('fact'), 'fact.text', w, errs); texts += [s.get('myth'), s.get('fact')]
+            elif ty == 'qa':
+                ps = s.get('pairs') or []
+                if not 1 <= len(ps) <= 2: errs.append(f'{w}: 1-2 question and answer pairs')
+                for p in ps: _len(p.get('q'), 'fact.text', w, errs); _len(p.get('a'), 'fact.text', w, errs); texts += [p.get('q'), p.get('a')]
+            for x in texts:
+                if x: _claims(x, w, errs, pound_ok=True)
         elif ty == 'statement':
             ls = s.get('lines') or []
             if not 1 <= len(ls) <= 3: errs.append(f'{w}: 1-3 lines')

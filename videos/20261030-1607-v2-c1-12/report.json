@@ -1,0 +1,60 @@
+{
+  "ok": true,
+  "problems": [],
+  "total": 20.35,
+  "timeline": [
+    {
+      "type": "hook",
+      "start": 0,
+      "dur": 3.45,
+      "screens": null
+    },
+    {
+      "type": "countdown",
+      "start": 3,
+      "dur": 3,
+      "screens": null
+    },
+    {
+      "type": "checklist",
+      "start": 5.55,
+      "dur": 3.4,
+      "screens": null
+    },
+    {
+      "type": "reveal",
+      "start": 8.5,
+      "dur": 2.6,
+      "screens": null
+    },
+    {
+      "type": "appgroup",
+      "start": 10.65,
+      "dur": 6.85,
+      "screens": [
+        {
+          "screen": "overview",
+          "start": 11,
+          "dur": 3.4
+        },
+        {
+          "screen": "export",
+          "start": 14.4,
+          "dur": 3
+        }
+      ]
+    },
+    {
+      "type": "cta",
+      "start": 17.05,
+      "dur": 2.9,
+      "screens": null
+    }
+  ],
+  "music": {
+    "bpm": 113.3,
+    "mood": "driving",
+    "key_shift": 5
+  },
+  "bytes": 1654314
+}
