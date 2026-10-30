@@ -1,0 +1,60 @@
+{
+  "ok": true,
+  "problems": [],
+  "total": 20.3,
+  "timeline": [
+    {
+      "type": "hook",
+      "start": 0,
+      "dur": 3.2,
+      "screens": null
+    },
+    {
+      "type": "pileup",
+      "start": 2.75,
+      "dur": 5.1,
+      "screens": null
+    },
+    {
+      "type": "reveal",
+      "start": 7.4,
+      "dur": 2,
+      "screens": null
+    },
+    {
+      "type": "appgroup",
+      "start": 8.95,
+      "dur": 6.45,
+      "screens": [
+        {
+          "screen": "bookings",
+          "start": 9.3,
+          "dur": 3
+        },
+        {
+          "screen": "diary",
+          "start": 12.3,
+          "dur": 3
+        }
+      ]
+    },
+    {
+      "type": "payoff",
+      "start": 14.95,
+      "dur": 2.5,
+      "screens": null
+    },
+    {
+      "type": "cta",
+      "start": 17,
+      "dur": 2.9,
+      "screens": null
+    }
+  ],
+  "music": {
+    "bpm": 113.3,
+    "mood": "bright",
+    "key_shift": -3
+  },
+  "bytes": 2561962
+}
