@@ -23,7 +23,7 @@ def main(spec_path, out):
         meta = pg.evaluate('spec => init(spec)', spec)
         report.update(total=meta['total'], timeline=meta['timeline'])
         if meta['problems']: report['problems'] += meta['problems']
-        if not 19.5 <= meta['total'] <= 31.0: report['problems'].append(f'video length {meta["total"]}s is outside 20-31s; use fewer or more scenes')
+        if not 19.5 <= meta['total'] <= 33.0: report['problems'].append(f'video length {meta["total"]}s is outside 20-33s; use fewer or more scenes')
         if report['problems']:
             json.dump(report, open(f'{out}/report.json', 'w'), indent=2); print('\n'.join(report['problems'])); b.close(); return 3
         n = int(meta['total'] * FPS)

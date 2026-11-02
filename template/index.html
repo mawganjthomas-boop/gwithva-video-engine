@@ -349,7 +349,7 @@ Object.assign(SCREENS,{
    o.vals=[['Income',s.income],['Expenses',s.expenses],['Profit',s.profit]].map((p,i)=>{const r=el('div','sar'+(i===2?' p':''),o.card,`<span>${p[0]}</span><b>${esc(p[1]||'')}</b>`);const b=r.querySelector('b');b.dataset.t=p[1]||'';return {r,b};});
    o.ch=el('div','fcard chart',scr,'<div class="h">Earned by month</div>');const hs=s.bars||[42,55,61,48,70,86];const lb=s.months||['Nov','Dec','Jan','Feb','Mar','Apr'];
    const bw=el('div','bars',o.ch);o.bars=hs.slice(0,6).map(h=>el('i',null,bw,null,`height:${h}%`));const bl=el('div','blab',o.ch);lb.slice(0,6).forEach(m=>el('span',null,bl,esc(m)));
-   o.exp=el('div','pbtn',scr,'Export for your accountant','top:668px');},
+   o.exp=el('div','pbtn',scr,esc(s.button||'Export your figures'),'top:668px');},
   cues(st){cue(st+.3,'flick');cue(st+.6,'flick');cue(st+.9,'flick');cue(st+2.2,'success');},
   update(o,t){o.vals.forEach((v,i)=>{const q=seg(t,.3+i*.3,.6+i*.3);v.r.style.opacity=cl(q*2);countTo(v.b,v.b.dataset.t,eo(seg(t,.3+i*.3,1.3+i*.3)));});
    o.bars.forEach((b,i)=>{b.style.transform=`scaleY(${eo(seg(t,.9+i*.12,1.4+i*.12))})`;});const e=eb(seg(t,2.0,2.35));o.exp.style.opacity=cl(e*2);o.exp.style.transform=`scale(${lerp(.9,1,e)})`;}},
@@ -364,7 +364,7 @@ Object.assign(SCREENS,{
  export:{dur:3.0,build(scr,s,o){finTop(scr,'Reports');el('div','exh',scr,'Export Reports');el('div','exy',scr,'Tax year '+esc(s.year||'2025/26'));
    o.rows=[{title:'Income',sub:'Every job, with dates',category:'Other'},{title:'Expenses',sub:'With receipt photos',category:'Supplies'},{title:'Self Assessment summary',sub:'Income, expenses, profit',category:'Equipment'}].map((r,i)=>frow(scr,r,226+i*88,'cg','Included'));
    o.btn=el('div','pbtn',scr,'Export CSV','top:494px');o.tap=el('div','tap',scr,null,'left:290px;top:524px');
-   o.file=el('div','file',scr,`<div class="fi">CSV</div><b>${esc(s.file||'gwithva-2025-26.csv')}</b><span>Ready for your accountant</span>`);},
+   o.file=el('div','file',scr,`<div class="fi">CSV</div><b>${esc(s.file||'gwithva-2025-26.csv')}</b><span>${esc(s.fileNote||'Your figures, ready for your tax return')}</span>`);},
   cues(st){[.2,.4,.6].forEach(x=>cue(st+x,'flick'));cue(st+1.2,'tap');cue(st+1.45,'success');},
   update(o,t){o.rows.forEach((r,i)=>{const q=seg(t,.2+i*.2,.5+i*.2);r.style.opacity=cl(q*2);r.style.transform=`translateX(${(1-eo(q))*40}px)`;});
    tapFx(o.tap,t,1.2);const f=eb(seg(t,1.45,1.8));o.file.style.opacity=t>1.45?1:0;o.file.style.transform=`translateY(${(1-f)*60}px) scale(${lerp(.9,1,f)})`;}},
@@ -439,12 +439,12 @@ LIB.mythfact={dur:s=>3.6,
  cues(st){cue(st+.1,'whoosh');cue(st+1.15,'clash');cue(st+1.6,'whoosh');cue(st+2.0,'thump');},
  update(o,t){const a=eo(seg(t,0,.4));o.m.style.opacity=a;o.m.style.transform=`translateY(${(1-a)*40}px)`;reveal(o.MX,t,.2);o.str.style.transform=`scaleX(${eio(seg(t,1.1,1.45))})`;
   const b=eo(seg(t,1.6,2.0));o.f.style.opacity=b;o.f.style.transform=`translateY(${(1-b)*80}px)`;reveal(o.FX,t,1.8);}};
-LIB.qa={dur:s=>Math.min(2,(s.pairs||[]).length)*2.7+.5,
+LIB.qa={dur:s=>Math.min(2,(s.pairs||[]).length)*(s.per||2.7)+.5,
  build(L,s){L.className='layer peachbg';const o={};o.b=[];(s.pairs||[]).slice(0,2).forEach((p,i)=>{const top=420+i*620;
-  o.b.push(el('div','abs qb qq',L,esc(p.q),`top:${top}px`));o.b.push(el('div','abs qb qa',L,esc(p.a),`top:${top+250}px`));});return o;},
+  o.b.push(el('div','abs qb qq',L,esc(p.q),`top:${top}px`));o.b.push(el('div','abs qb qa',L,esc(p.a),`top:${top+250}px`));});o.per=s.per||2.7;return o;},
  fitAll(o){o.b.forEach(b=>fitH(b,230,36));},
- cues(st,o){o.b.forEach((_,i)=>cue(st+.2+i*1.35,i%2?'bloop':'pop'));},
- update(o,t){o.b.forEach((b,i)=>{const q=eb(seg(t,.2+i*1.35,.55+i*1.35));b.style.opacity=cl(q*2);b.style.transform=`scale(${lerp(.8,1,q)})`;b.style.transformOrigin=i%2?'right bottom':'left bottom';});}};
+ cues(st,o){const h=(o.per||2.7)/2;o.b.forEach((_,i)=>cue(st+.2+i*h,i%2?'bloop':'pop'));},
+ update(o,t){const h=(o.per||2.7)/2;o.b.forEach((b,i)=>{const q=eb(seg(t,.2+i*h,.55+i*h));b.style.opacity=cl(q*2);b.style.transform=`scale(${lerp(.8,1,q)})`;b.style.transformOrigin=i%2?'right bottom':'left bottom';});}};
 
 LIB.appgroup={transparentStart:false,
  build(L,g){L.className='layer warm';const o={screens:[]};o.capEls=[];o.win=el('div','abs win',L);
