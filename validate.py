@@ -31,7 +31,7 @@ LIMITS = {  # max characters
     'hook.line': 26, 'hook.punch': 22, 'pileup.keyword': 20, 'pileup.block': 16, 'notif.title': 18, 'notif.body': 46,
     'reveal.tagline': 44, 'caption': 22, 'statement.line': 20, 'statement.kicker': 28, 'payoff.line': 18,
     'cta.button': 30, 'cta.sub': 44, 'card.title': 22, 'card.who': 14, 'card.time': 13, 'msg': 64, 'client': 16,
-    'entry.title': 22, 'reveal.bridge': 40, 'fact.big': 8, 'fact.line': 26, 'fact.text': 60, 'fact.item': 24, 'row.title': 28, 'row.sub': 28,
+    'entry.title': 22, 'reveal.bridge': 40, 'fact.big': 8, 'fact.line': 26, 'fact.text': 95, 'fact.item': 24, 'row.title': 28, 'row.sub': 28,
 }
 
 
