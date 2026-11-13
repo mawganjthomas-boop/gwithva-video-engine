@@ -173,5 +173,5 @@ def validate(spec):
         elif ty == 'cta':
             _len(s.get('button'), 'cta.button', w, errs); _claims(s.get('button'), w, errs)
             if s.get('sub'): _len(s['sub'], 'cta.sub', w, errs); _claims(s['sub'], w, errs)
-    if (spec.get('music') or {}).get('mood', 'warm') not in ('warm', 'bright', 'driving'): errs.append('music.mood must be warm, bright or driving')
+    if (spec.get('music') or {}).get('mood', 'warm') not in ('warm', 'bright', 'driving', 'bounce'): errs.append('music.mood must be warm, bright, driving or bounce')
     return errs

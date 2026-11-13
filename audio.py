@@ -90,10 +90,110 @@ MOODS = {
 }
 
 
+# ---------------- 'bounce': a different band entirely ----------------
+# Marimba hook, offbeat chord stabs, syncopated bass, snare and shaker.
+# Shares no instruments with the other moods so it never sounds like the house track.
+
+def marimba(f, dur=.55):
+    n = int(dur * SR); t = np.arange(n) / SR
+    s = np.sin(2 * np.pi * f * t) * np.exp(-t * 7) + .35 * np.sin(2 * np.pi * f * 4 * t) * np.exp(-t * 28) + .12 * np.sin(2 * np.pi * f * 10 * t) * np.exp(-t * 60)
+    return s * np.minimum(1, t / .0015)
+
+def stab(fs, dur=.14):
+    n = int(dur * SR); t = np.arange(n) / SR
+    s = sum(sum(np.sin(2 * np.pi * f * k * t) / k for k in range(1, 6)) for f in fs) / len(fs)
+    return filt(s, 3200) * env(n, .002, dur * .6, 4)
+
+def snare(rng):
+    n = int(.22 * SR); t = np.arange(n) / SR
+    body = np.sin(2 * np.pi * (180 + 60 * np.exp(-t * 40)) * t) * np.exp(-t * 30)
+    return body * .6 + filt(rng.standard_normal(n), [1500, 9000], 'band') * env(n, .001, .08, 5)
+
+def shaker(rng, acc=False):
+    n = int(.07 * SR); return filt(rng.standard_normal(n), 6000, 'high') * env(n, .006, .03, 5) * (1 if acc else .55)
+
+def fbass(f, dur):
+    n = int(dur * SR); t = np.arange(n) / SR
+    s = sum(np.sin(2 * np.pi * f * k * t) / k for k in range(1, 8))
+    cut = 300 + 1500 * np.exp(-t * 18)
+    out = np.zeros(n); ch = int(.01 * SR)
+    for k in range(0, n, ch):  # quick filter "pluck" sweep
+        seg = filt(s[max(0, k - ch):k + ch], float(min(cut[k], 20000)))
+        out[k:k + ch] = seg[-len(out[k:k + ch]):]
+    return np.tanh(1.8 * out) * np.minimum(1, t / .004) * np.minimum(1, np.maximum(0, dur - t) / .02)
+
+BOUNCE_PROG = [[0, 4, 7], [5, 9, 12], [-3, 0, 4], [-5, -1, 2]]      # I IV vi V
+# 2-bar hook on a 16-step grid: (step, semitones above root)
+HOOK_A = [(0, 12), (3, 16), (6, 19), (8, 21), (10, 19), (12, 16), (14, 14),
+          (16, 12), (19, 14), (22, 16), (24, 9), (26, 7)]
+HOOK_B = HOOK_A[:9] + [(22, 16), (24, 19), (26, 21), (28, 24)]
+BASS_PAT = [(0, 0, .3), (3, 12, .15), (6, 0, .2), (8, 7, .2), (10, 0, .15), (11, 12, .12), (14, 7, .2)]
+
+
+def music_bounce(meta, mu, r2, get, total):
+    bpm = r2.uniform(114, 122); B = 60 / bpm; s16 = B / 4; bar = 4 * B
+    key = int(r2.choice([0, 2, -3, 5, -2])); root = 48 + key
+    groove_start = (get('reveal') or get('appgroup') or [{'start': 3.4}])[0]['start'] + (.3 if get('reveal') else 0)
+    payoff = (get('payoff') or [None])[0]; cta = (get('cta') or [None])[0]
+    groove_end = payoff['start'] - .05 if payoff else (cta['start'] if cta else total - 2)
+    # intro: snaps + a filtered teaser of the hook, so the tune is planted from second one
+    t = 0.0; k = 0
+    while t < groove_start - .05:
+        if k % 8 in (4,): mu.add(clap(r2), t, .05, .2)
+        if k % 2 == 1: mu.add(shaker(r2, k % 4 == 3), t, .035, .4)
+        t += s16 * 2; k += 2
+    st0 = 0.0
+    while st0 < groove_start - .3:
+        for step, m in HOOK_A:
+            tq = st0 + step * s16
+            if tq < groove_start - .1: mu.add(filt(marimba(n2f(root + 12 + m)), 1800), tq, .1, -.15)
+        st0 += 2 * bar
+    mu.add(filt(noise(r2, .5), 5000, 'high') * np.linspace(0, 1, int(.5 * SR)) ** 3, groove_start - .5, .07)
+    # groove
+    t = groove_start; bi = 0
+    while t < groove_end:
+        ch = BOUNCE_PROG[bi % 4]; hook = HOOK_A if (bi // 2) % 2 == 0 else HOOK_B
+        for q in range(16):
+            tq = t + q * s16
+            if tq >= groove_end: break
+            if q in (0, 7, 10): mu.add(kick(), tq, .32)
+            if q in (4, 12): mu.add(snare(r2), tq, .16, -.05)
+            if q == 12 and bi % 2: mu.add(clap(r2), tq, .07, .15)
+            mu.add(shaker(r2, q % 4 == 2), tq, .03, .35)
+            if q in (2, 6, 10, 14): mu.add(stab([n2f(root + 12 + m) for m in ch]), tq, .07, .25)
+        for step, m, ln in BASS_PAT:
+            tq = t + step * s16
+            if tq < groove_end: mu.add(fbass(n2f(root - 12 + ch[0] + m), ln), tq, .2)
+        off = 0 if bi % 2 == 0 else 16
+        for step, m in hook:
+            if off <= step < off + 16:
+                tq = t + (step - off) * s16
+                if tq < groove_end: mu.add(marimba(n2f(root + 12 + m)), tq, .14, -.2)
+                if tq < groove_end and bi >= 2: mu.add(marimba(n2f(root + 24 + m)) , tq + .004, .035, .3)
+        t += bar; bi += 1
+    if payoff:
+        p0 = payoff['start']
+        for i, (dt, m) in enumerate([(0, 12), (s16 * 3, 16), (s16 * 6, 19), (s16 * 8, 24)]):
+            mu.add(marimba(n2f(root + 12 + m), .9), p0 + .1 + dt, .14)
+        mu.add(stab([n2f(root + 12 + m) for m in BOUNCE_PROG[1]], .5), p0 + .1, .08)
+        mu.add(kick(), p0 + .1, .3); mu.add(fbass(n2f(root - 12 + 5), .6), p0 + .1, .2)
+        mu.add(stab([n2f(root + 12 + m) for m in BOUNCE_PROG[3]], .5), p0 + 1.05, .08)
+        mu.add(kick(), p0 + 1.05, .3); mu.add(fbass(n2f(root - 12 - 5), .6), p0 + 1.05, .2)
+    if cta:
+        c0 = cta['start']
+        mu.add(kick(), c0, .32); mu.add(fbass(n2f(root - 12), 1.0), c0, .22)
+        mu.add(stab([n2f(root + 12 + m) for m in BOUNCE_PROG[0]], .9), c0, .09)
+        for i, m in enumerate([12, 16, 19, 24, 28]): mu.add(marimba(n2f(root + 12 + m), 1.2), c0 + .5 + i * s16 * 1.5, .12, -.3 + i * .15)
+        t = c0 + bar / 2; k = 0
+        while t < total - 1.2:
+            mu.add(shaker(r2, k % 2 == 1), t, .025, .35); t += s16 * 2; k += 1
+    return {'bpm': round(bpm, 1), 'key_shift': key}
+
+
 def render_audio(meta, spec, out_path):
     seed = int(spec.get('seed', 7)) & 0xffffffff
     mood = (spec.get('music') or {}).get('mood', 'warm')
-    M = MOODS.get(mood, MOODS['warm'])
+    M = MOODS.get(mood, MOODS['warm'])  # 'bounce' has its own band below
     rng = np.random.default_rng(seed)
     total = meta['total']; mx = Mix(total, seed); r = mx.rng
     tl = meta['timeline']; get = lambda typ: [x for x in tl if x['type'] == typ]
@@ -147,6 +247,9 @@ def render_audio(meta, spec, out_path):
 
     # ---------------- music ----------------
     mu = Mix(total, seed + 1); r2 = mu.rng
+    if mood == 'bounce':
+        info = music_bounce(meta, mu, r2, get, total)
+        return _finish(sfx, mu, total, out_path, dict(info, mood=mood))
     bpm = r2.uniform(*M['bpm']); B = 60 / bpm; bar = 4 * B
     key = int(r2.choice([0, 2, -3, 5, -2]))  # transpose
     prog = M['prog']
@@ -191,6 +294,10 @@ def render_audio(meta, spec, out_path):
         mu.add(pad([n2f(root + 12 + m) for m in prog[0]] + [n2f(root + 28)], total - c0, .05, 1.4), c0, .08)
         mu.add(bass(n2f(root - 12), 1.2), c0, .22); mu.add(kick(), c0, .3)
         for i, m in enumerate([24, 28, 31, 36]): mu.add(pluck(n2f(root + m), 1.2), c0 + .95 + i * .09, .07, -.3 + i * .2)
+    return _finish(sfx, mu, total, out_path, {'bpm': round(bpm, 1), 'mood': mood, 'key_shift': key})
+
+
+def _finish(sfx, mu, total, out_path, info):
     mus = np.stack([mu.L, mu.R], 1)
     if np.abs(mus).max() > 0: mus = mus / np.abs(mus).max() * .55
     if np.abs(sfx).max() > 0: sfx = sfx / np.abs(sfx).max() * .85
@@ -199,4 +306,4 @@ def render_audio(meta, spec, out_path):
     mix = np.tanh(mix * 1.3) / np.tanh(1.3); mix *= .89 / max(1e-6, np.abs(mix).max())
     w = wave.open(out_path, 'wb'); w.setnchannels(2); w.setsampwidth(2); w.setframerate(SR)
     w.writeframes((mix * 32767).astype('<i2').tobytes()); w.close()
-    return {'bpm': round(bpm, 1), 'mood': mood, 'key_shift': key}
+    return info

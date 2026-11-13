@@ -18,5 +18,7 @@ Playfair Display + Nunito, the house-and-arrow logo), original music and sound d
 | `examples/` | Two sample storyboards. Run the workflow by hand to test them. |
 | `videos/` | Finished videos (newest 40 kept). Served at `https://<owner>.github.io/gwithva-video-engine/videos/...` |
 
+Music moods: `warm`, `bright`, `driving` (one shared band, different chords) and `bounce` (its own band: marimba hook, chord stabs, funky bass, snare and shaker).
+
 Scenes available: `hook` (style `statement` or `pov`), `pileup`, `reveal`, `app` (screens `bookings`, `diary`, `messages`, `share`), `statement`, `payoff`, `cta`.
 App screens are captures of the real cleaner app; names, times and messages on them are sample data and every video says "Sample data shown".
