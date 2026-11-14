@@ -127,12 +127,21 @@ BOUNCE_PROG = [[0, 4, 7], [5, 9, 12], [-3, 0, 4], [-5, -1, 2]]      # I IV vi V
 HOOK_A = [(0, 12), (3, 16), (6, 19), (8, 21), (10, 19), (12, 16), (14, 14),
           (16, 12), (19, 14), (22, 16), (24, 9), (26, 7)]
 HOOK_B = HOOK_A[:9] + [(22, 16), (24, 19), (26, 21), (28, 24)]
+# More tunes, so 'bounce' videos don't all share one melody (one is picked per video from its seed)
+HOOK_C = [(0, 16), (2, 19), (4, 21), (6, 19), (10, 16), (12, 14), (14, 12),
+          (16, 14), (18, 16), (20, 19), (24, 21), (26, 19), (28, 16)]
+HOOK_D = HOOK_C[:7] + [(16, 19), (18, 21), (20, 24), (24, 21), (28, 24)]
+HOOK_E = [(0, 7), (2, 12), (3, 14), (6, 16), (8, 14), (11, 12), (12, 9), (14, 12),
+          (16, 7), (18, 12), (19, 14), (22, 16), (24, 19), (27, 16)]
+HOOK_F = HOOK_E[:8] + [(16, 19), (19, 21), (22, 19), (24, 16), (26, 14), (28, 12)]
+HOOKS = [(HOOK_A, HOOK_B), (HOOK_C, HOOK_D), (HOOK_E, HOOK_F)]
 BASS_PAT = [(0, 0, .3), (3, 12, .15), (6, 0, .2), (8, 7, .2), (10, 0, .15), (11, 12, .12), (14, 7, .2)]
 
 
-def music_bounce(meta, mu, r2, get, total):
-    bpm = r2.uniform(114, 122); B = 60 / bpm; s16 = B / 4; bar = 4 * B
+def music_bounce(meta, mu, r2, get, total, bpm_range=(114, 122), hook_pair=None):
+    bpm = r2.uniform(*bpm_range); B = 60 / bpm; s16 = B / 4; bar = 4 * B
     key = int(r2.choice([0, 2, -3, 5, -2])); root = 48 + key
+    HA, HB = hook_pair or HOOKS[int(r2.integers(0, len(HOOKS)))]
     groove_start = (get('reveal') or get('appgroup') or [{'start': 3.4}])[0]['start'] + (.3 if get('reveal') else 0)
     payoff = (get('payoff') or [None])[0]; cta = (get('cta') or [None])[0]
     groove_end = payoff['start'] - .05 if payoff else (cta['start'] if cta else total - 2)
@@ -144,7 +153,7 @@ def music_bounce(meta, mu, r2, get, total):
         t += s16 * 2; k += 2
     st0 = 0.0
     while st0 < groove_start - .3:
-        for step, m in HOOK_A:
+        for step, m in HA:
             tq = st0 + step * s16
             if tq < groove_start - .1: mu.add(filt(marimba(n2f(root + 12 + m)), 1800), tq, .1, -.15)
         st0 += 2 * bar
@@ -152,7 +161,7 @@ def music_bounce(meta, mu, r2, get, total):
     # groove
     t = groove_start; bi = 0
     while t < groove_end:
-        ch = BOUNCE_PROG[bi % 4]; hook = HOOK_A if (bi // 2) % 2 == 0 else HOOK_B
+        ch = BOUNCE_PROG[bi % 4]; hook = HA if (bi // 2) % 2 == 0 else HB
         for q in range(16):
             tq = t + q * s16
             if tq >= groove_end: break
@@ -247,8 +256,12 @@ def render_audio(meta, spec, out_path):
 
     # ---------------- music ----------------
     mu = Mix(total, seed + 1); r2 = mu.rng
-    if mood == 'bounce':
-        info = music_bounce(meta, mu, r2, get, total)
+    # 'bright' and 'driving' now use the bounce band (Mawgan, 13 Nov 2026: the old shared sound got repetitive).
+    # 'bounce' keeps the original tune; bright/driving pick one of three tunes from the seed; driving is faster.
+    if mood in ('bounce', 'bright', 'driving'):
+        info = music_bounce(meta, mu, r2, get, total,
+                            bpm_range=(122, 128) if mood == 'driving' else (114, 122),
+                            hook_pair=HOOKS[0] if mood == 'bounce' else None)
         return _finish(sfx, mu, total, out_path, dict(info, mood=mood))
     bpm = r2.uniform(*M['bpm']); B = 60 / bpm; bar = 4 * B
     key = int(r2.choice([0, 2, -3, 5, -2]))  # transpose
