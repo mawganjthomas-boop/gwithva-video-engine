@@ -124,6 +124,8 @@ jobs:
           cut = (datetime.datetime.utcnow() - datetime.timedelta(days=21)).strftime('%Y%m%d')
           for d in os.listdir('/tmp/media/videos'):
               p = f'/tmp/media/videos/{d}'
+              keep = set(l.strip() for l in open('keep.txt') if l.strip()) if os.path.exists('keep.txt') else set()
+              if d in keep: continue  # still waiting to be posted (scheduled), see keep.txt
               if os.path.isdir(p) and d[:8].isdigit() and d[:8] < cut: shutil.rmtree(p); print('archived (deleted)', d)
           EOF
           (cd /tmp/media && git init -q && git checkout -q --orphan media && git add -A && git -c user.name=gwithva-video-engine -c user.email=actions@users.noreply.github.com commit -qm "Videos live on $(date -u +%F)" \

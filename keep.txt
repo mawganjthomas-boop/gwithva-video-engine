@@ -1,0 +1,14 @@
+# Video folders that must stay online because a scheduled post still uses them.
+# The 21-day clean-up never deletes these. Remove a line once that post has gone out.
+20261102-0550-v3-c2-11
+20261102-0622-v4-c1-02
+20261102-0622-v4-c1-04
+20261102-0622-v4-c1-06
+20261102-0622-v4-c1-08
+20261102-0622-v4-c1-10
+20261102-0622-v4-c1-12
+20261102-0622-v4-c2-01
+20261102-0622-v4-c2-03
+20261102-0622-v4-c2-05
+20261102-0622-v4-c2-07
+20261102-0622-v4-c2-09
