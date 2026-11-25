@@ -244,5 +244,5 @@ def validate_blocks(spec):
     last = sc[-1].get('blocks') or []
     if not any(b.get('kind') == 'cta' for b in last): errs.append('the last scene must hold the end card (a "cta" block)')
     if 'logo' not in kinds_all and 'cta' not in kinds_all: errs.append('show the Gwithva logo at least once')
-    if (spec.get('music') or {}).get('mood', 'warm') not in ('warm', 'bright', 'driving', 'bounce'): errs.append('music.mood must be warm, bright, driving or bounce')
+    if (spec.get('music') or {}).get('mood', 'bright') not in ('warm', 'bright', 'driving', 'bounce', 'cartoon'): errs.append('music.mood must be warm, bright, driving, bounce or cartoon')
     return errs

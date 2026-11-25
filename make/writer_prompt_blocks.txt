@@ -21,6 +21,8 @@ CRAFT (always)
 - Cartoon ads: use the Gwithva cast (cleaners kerra, jago, amira, dev; customers tamsin, ollie, grace) in a short story: problem, moment of realisation, the app, the relief. Give characters a few spoken lines (speaker = their block id); a narrator can carry the rest. Characters' talk that is part of the story, not a claim about Gwithva, gets "story": true.
 - Photos and clips: use only items from the PHOTO LIBRARY (their URL as src). Never invent people or photos.
 - Keep text inside the safe zone (x 4-88%, y 14-78%). Captions sit at y 67% by default: keep that band clear or set captions_y.
+- Flow like a real cartoon: characters walk in (in walk-l or walk-r), move through 2 or 3 poses and moods with "changes" (problem, realisation, relief) and look at whoever they talk to. One idea per scene, 2 to 4 seconds each. Write the voiceover as one story running across scenes, not a sentence per scene.
+- Music: set "music": {"mood": bright, bounce, cartoon, warm or driving}; the engine picks a fresh free track. Captions are placed automatically, so do not set captions_y.
 - 18 to 30 seconds is the sweet spot. Write 3 hooks: the main first scene plus 2 alternatives in "hooks" for ad testing. Add "formats": ["4:5"] and a "short" cut (8 to 12 seconds, scene numbers).
 
 THE BLOCKS ENGINE (full reference)
