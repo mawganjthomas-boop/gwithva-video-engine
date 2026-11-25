@@ -13,6 +13,9 @@ FPS = 30
 def main(spec_path, out):
     os.makedirs(out, exist_ok=True)
     spec = json.load(open(spec_path))
+    if spec.get('engine') == 'blocks':  # v2: building blocks (cartoons, photos, clips, voiceover, any structure)
+        from render_blocks import main_blocks
+        return main_blocks(spec, out)
     report = {'ok': False, 'problems': []}
     errs = validate(spec)
     if errs:

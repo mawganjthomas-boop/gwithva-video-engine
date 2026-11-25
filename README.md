@@ -1,5 +1,7 @@
 # Gwithva video engine
 
+**Two engines.** Storyboards with `"engine": "blocks"` use the new building-block engine (cartoon characters, real app screens, photos, clips, free voiceover, captions, any structure). See [BLOCKS.md](BLOCKS.md). Everything else uses the original fixed-scene engine below.
+
 Turns a storyboard (JSON written by Claude in Make.com) into a finished 9:16 Gwithva ad:
 real app screens, locked brand (deep teal #004355, cream #F4F1EA, terracotta #CB6A42, peach #EDA57F,
 Playfair Display + Nunito, the house-and-arrow logo), original music and sound design.

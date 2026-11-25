@@ -2,3 +2,4 @@ out/
 spec.json
 __pycache__/
 make/*.json
+voices/

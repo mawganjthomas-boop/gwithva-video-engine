@@ -175,3 +175,74 @@ def validate(spec):
             if s.get('sub'): _len(s['sub'], 'cta.sub', w, errs); _claims(s['sub'], w, errs)
     if (spec.get('music') or {}).get('mood', 'warm') not in ('warm', 'bright', 'driving', 'bounce'): errs.append('music.mood must be warm, bright, driving or bounce')
     return errs
+
+
+# ---------------------------------------------------------------------------------------------------------
+# v2 "blocks" engine: any structure, so the checks are about truth, readability and platform rules,
+# not scene order. Every piece of text (on screen, in speech bubbles and in the voiceover) is checked.
+BLOCK_KINDS = {'text', 'character', 'prop', 'bubble', 'notifs', 'checklist', 'counter', 'logo', 'cta', 'arrow', 'circle',
+               'burst', 'image', 'app'}
+CAST = {'kerra', 'jago', 'amira', 'dev', 'tamsin', 'ollie', 'grace'}
+BLOCK_LIMITS = {'text': 90, 'bubble': 70, 'checklist.item': 28, 'voice.line': 160, 'cta.button': 30, 'cta.sub': 44}
+
+
+def _block_texts(b):
+    k = b.get('kind', 'text')
+    if k == 'text': return [b.get('text')]
+    if k == 'bubble': return [b.get('text')]
+    if k == 'checklist': return list(b.get('items') or [])
+    if k == 'notifs': return [n.get('body') for n in b.get('items') or []]
+    if k == 'cta': return [b.get('button'), b.get('sub')]
+    if k == 'app': return list(b.get('caption') or [])
+    return []
+
+
+def validate_blocks(spec):
+    errs = []
+    sc = spec.get('scenes') or []
+    if not isinstance(sc, list) or not 3 <= len(sc) <= 14: return ['a blocks storyboard needs 3 to 14 scenes']
+    total = sum(float(s.get('dur') or 2.5) for s in sc)
+    if not 6 <= total <= 45: errs.append(f'total length {total:.1f}s: keep it between 6 and 45 seconds')
+    kinds_all = []
+    for i, s in enumerate(sc):
+        w = f'scene {i + 1}'
+        d = float(s.get('dur') or 2.5)
+        if not .8 <= d <= 8: errs.append(f'{w}: dur {d}s must be 0.8 to 8 seconds')
+        bl = s.get('blocks') or []
+        if not bl: errs.append(f'{w}: needs at least one block')
+        if len(bl) > 12: errs.append(f'{w}: at most 12 blocks')
+        for b in bl:
+            k = b.get('kind', 'text'); kinds_all.append(k)
+            if k not in BLOCK_KINDS: errs.append(f'{w}: unknown block kind "{k}"'); continue
+            if k == 'character' and b.get('who') not in CAST: errs.append(f'{w}: character "{b.get("who")}" must be one of {sorted(CAST)}')
+            if k == 'text' and len(str(b.get('text') or '')) > BLOCK_LIMITS['text']: errs.append(f'{w}: text "{str(b.get("text"))[:40]}..." is over {BLOCK_LIMITS["text"]} characters')
+            if k == 'bubble' and len(str(b.get('text') or '')) > BLOCK_LIMITS['bubble']: errs.append(f'{w}: speech bubble over {BLOCK_LIMITS["bubble"]} characters')
+            if k == 'checklist':
+                for it in b.get('items') or []:
+                    if len(it) > BLOCK_LIMITS['checklist.item']: errs.append(f'{w}: checklist item "{it}" over {BLOCK_LIMITS["checklist.item"]} characters')
+            if k == 'cta':
+                _len(b.get('button'), 'cta.button', w, errs)
+                if b.get('sub'): _len(b['sub'], 'cta.sub', w, errs)
+            if k == 'app' and b.get('screen') not in SCREENS: errs.append(f'{w}: app screen must be one of {sorted(SCREENS)}')
+            if k == 'notifs':
+                for n in b.get('items') or []:
+                    _len(n.get('title'), 'notif.title', w, errs); _len(n.get('body'), 'notif.body', w, errs)
+                    if re.search(r'\b(bank details|sort code|password|pin)\b', n.get('body', ''), re.I): errs.append(f'{w}: avoid scam-looking messages')
+            # truth: anything said about Gwithva. Speech by customers/cleaners in a story can mention prices etc. only
+            # when b["story"] is true (in-character talk that is not a Gwithva claim, e.g. "Can you do Friday?").
+            for x in _block_texts(b):
+                if x and not b.get('story'): _claims(str(x).replace('*', ''), w, errs)
+                if x and re.search(r'!', str(x)) and k in ('text', 'cta'): errs.append(f'{w}: no exclamation marks in on-screen text ("{x}")')
+    for ln in (spec.get('voice') or {}).get('lines') or []:
+        t = ln.get('text') or ''
+        if len(t) > BLOCK_LIMITS['voice.line']: errs.append(f'voice line "{t[:40]}..." is over {BLOCK_LIMITS["voice.line"]} characters; split it')
+        if not ln.get('story'): _claims(t, 'voiceover', errs)
+        if not isinstance(ln.get('scene'), int) or not 1 <= ln['scene'] <= len(sc): errs.append(f'voice line "{t[:30]}": scene must be a scene number 1-{len(sc)}')
+    # platform craft rules
+    first = sc[0].get('blocks') or []
+    if not any(float(b.get('t') or 0) <= .2 for b in first): errs.append('scene 1: something must move in the first half-second (a block with t 0 to 0.2)')
+    last = sc[-1].get('blocks') or []
+    if not any(b.get('kind') == 'cta' for b in last): errs.append('the last scene must hold the end card (a "cta" block)')
+    if 'logo' not in kinds_all and 'cta' not in kinds_all: errs.append('show the Gwithva logo at least once')
+    if (spec.get('music') or {}).get('mood', 'warm') not in ('warm', 'bright', 'driving', 'bounce'): errs.append('music.mood must be warm, bright, driving or bounce')
+    return errs

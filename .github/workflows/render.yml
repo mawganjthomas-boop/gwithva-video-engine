@@ -39,8 +39,25 @@ jobs:
       - name: Install tools
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg > /dev/null
-          python -m pip install -q playwright==1.48.0 numpy scipy
+          python -m pip install -q playwright==1.48.0 numpy scipy piper-tts
           python -m playwright install --with-deps chromium > /dev/null
+
+      - name: Cache voices
+        uses: actions/cache@v4
+        with:
+          path: voices
+          key: piper-voices-v1
+
+      - name: Download free voices (Piper, UK English)
+        run: |
+          mkdir -p voices
+          for v in en_GB-jenny_dioco-medium:jenny_dioco en_GB-alba-medium:alba en_GB-alan-medium:alan en_GB-northern_english_male-medium:northern_english_male en_GB-cori-medium:cori; do
+            name=${v%%:*}; dir=${v##*:}
+            for ext in onnx onnx.json; do
+              [ -f "voices/$name.$ext" ] || curl -sSL -o "voices/$name.$ext" "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_GB/$dir/medium/$name.$ext"
+            done
+          done
+          ls -la voices
 
       - name: Write storyboard
         run: |
@@ -68,7 +85,7 @@ jobs:
           dest = f"videos/{time.strftime('%Y%m%d-%H%M%S')}-{os.environ['PAGE_ID'][:8]}"
           if ok:
               os.makedirs(dest, exist_ok=True)
-              for f in ('video.mp4', 'cover.jpg', 'sheet.jpg', 'report.json'): shutil.copy(f'out/{f}', f'{dest}/{f}')
+              for f in set(['video.mp4', 'cover.jpg', 'sheet.jpg', 'report.json'] + (rep.get('files') or [])): shutil.copy(f'out/{f}', f'{dest}/{f}')
               shutil.copy('spec.json', f'{dest}/storyboard.json')
               # keep the repo small: only the newest 40 videos are kept
               olds = sorted(d for d in os.listdir('videos') if os.path.isdir(f'videos/{d}'))[:-40]
@@ -110,6 +127,9 @@ jobs:
               for k in ('video', 'cover', 'sheet'):
                   ext = 'mp4' if k == 'video' else 'jpg'
                   body[f'{k}_url'] = f"{base}/{dest}/{k}.{ext}"
+              # extra versions from the blocks engine: 4:5 / 1:1 crops, extra hooks, the short cut
+              body['extra_urls'] = ' '.join(f"{base}/{dest}/{f}" for f in (rep.get('files') or []) if f != 'video.mp4')
+              body['notes'] = ' | '.join(rep.get('notes') or [])[:600]
           print(json.dumps(body, indent=2))
           if cb:
               req = urllib.request.Request(cb, data=json.dumps(body).encode(), headers={'Content-Type': 'application/json'})
