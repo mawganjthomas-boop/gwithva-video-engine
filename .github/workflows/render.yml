@@ -39,7 +39,9 @@ jobs:
       - name: Install tools
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg > /dev/null
-          python -m pip install -q playwright==1.48.0 numpy scipy piper-tts
+          sudo apt-get install -y -qq espeak-ng > /dev/null
+          python -m pip install -q torch --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -q playwright==1.48.0 numpy scipy piper-tts kokoro soundfile
           python -m playwright install --with-deps chromium > /dev/null
 
       - name: Cache voices
@@ -47,6 +49,12 @@ jobs:
         with:
           path: voices
           key: piper-voices-v2
+
+      - name: Cache Kokoro voice model
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: kokoro-v1
 
       - name: Download free voices (Piper, UK English)
         run: |

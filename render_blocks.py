@@ -20,10 +20,34 @@ VOICE_DIR = HERE / 'voices'
 # 'semaine:<name>' picks one speaker from the four-speaker English Semaine voice.
 VOICES = {'cori': 'en_GB-cori-high', 'cori2': 'en_GB-cori-medium', 'alba': 'en_GB-alba-medium', 'alan': 'en_GB-alan-medium',
           'northern': 'en_GB-northern_english_male-medium', 'semaine': 'en_GB-semaine-medium'}
-CAST_VOICE = {'kerra': 'semaine:prudence', 'amira': 'semaine:poppy', 'tamsin': 'cori2', 'grace': 'alba',
-              'jago': 'northern', 'dev': 'semaine:obadiah', 'ollie': 'alan'}
+# Kokoro (free, Apache 2.0, runs in GitHub Actions) sounds far more natural than Piper, so it is the default (25 Nov 2026).
+# British voices: bf_emma, bf_isabella, bf_alice, bf_lily, bm_george, bm_lewis, bm_daniel, bm_fable. Piper stays as a fallback.
+CAST_VOICE = {'kerra': 'kokoro:bf_isabella', 'amira': 'kokoro:bf_alice', 'tamsin': 'kokoro:bf_lily', 'grace': 'kokoro:bf_alice',
+              'jago': 'kokoro:bm_george', 'dev': 'kokoro:bm_lewis', 'ollie': 'kokoro:bm_daniel'}
+PIPER_FALLBACK = {'kokoro:bf_isabella': 'semaine:prudence', 'kokoro:bf_alice': 'alba', 'kokoro:bf_lily': 'cori2', 'kokoro:bf_emma': 'cori',
+                  'kokoro:bm_george': 'northern', 'kokoro:bm_lewis': 'semaine:obadiah', 'kokoro:bm_daniel': 'alan', 'kokoro:bm_fable': 'alan'}
+# Exact sounds for Kokoro, written in phonemes (IPA). Change here and every video follows.
+PHONEMES = {r'\bgwithva\.app\b': '[Gwithva](/ɡwˈɪðvɑː/) dot app', r'\bgwithva dot app\b': '[Gwithva](/ɡwˈɪðvɑː/) dot app',
+            r'\bGwithva\b': '[Gwithva](/ɡwˈɪðvɑː/)'}
+_KP = {}
+
+
+def synth_kokoro(text, voice, path):
+    try:
+        from kokoro import KPipeline
+    except Exception:
+        return None
+    if '](/' not in text:  # the writer already gave exact phonemes
+        for pat, rep in PHONEMES.items(): text = re.sub(pat, rep, text, flags=re.I)
+    for pat, rep in list(PRONOUNCE.items())[3:]: text = re.sub(pat, rep, text, flags=re.I)  # Airbnb, DBS, 10pm
+    if 'b' not in _KP: _KP['b'] = KPipeline(lang_code='b')
+    parts = [r.audio.numpy() if hasattr(r.audio, 'numpy') else np.asarray(r.audio) for r in _KP['b'](text, voice=voice, speed=1.0) if r.audio is not None]
+    if not parts: return None
+    x = np.concatenate(parts).astype(np.float32)
+    x = np.interp(np.linspace(0, len(x) - 1, int(len(x) * SR / 24000)), np.arange(len(x)), x).astype(np.float32)
+    return x, len(x) / SR
 # How to say words the voices get wrong. Spelled the way it sounds; change here and every video follows.
-PRONOUNCE = {r'\bgwithva\.app\b': 'Gwithvah dot app', r'\bgwithva dot app\b': 'Gwithvah dot app', r'\bGwithva\b': 'Gwithvah',
+PRONOUNCE = {r'\bgwithva\.app\b': 'Gwith vah dot app', r'\bgwithva dot app\b': 'Gwith vah dot app', r'\bGwithva\b': 'Gwith vah',
              r'\bAirbnb\b': 'Air B and B', r'\bDBS\b': 'D B S', r'\b10pm\b': 'ten P M'}
 
 
@@ -72,6 +96,10 @@ def fetch_media(spec, work):
 
 def synth(text, voice, path):
     """Piper TTS to a wav file. Returns (samples at SR mono float32, duration) or None if Piper isn't available."""
+    if voice.startswith('kokoro:'):
+        r = synth_kokoro(text, voice.split(':', 1)[1], path)
+        if r is not None: return r
+        voice = PIPER_FALLBACK.get(voice, 'cori')
     base, _, spk = voice.partition(':')
     model = VOICE_DIR / f'{VOICES.get(base, VOICES["cori"])}.onnx'
     if not model.exists(): return None
@@ -113,12 +141,12 @@ def build_voice(spec, work, probs):
     vs = spec.get('voice') or {}
     lines = vs.get('lines') or []
     if not lines: return None, None
-    narrator = vs.get('narrator', 'cori')
+    narrator = vs.get('narrator', 'kokoro:bf_emma')
     speakers = {b.get('id'): b.get('who') for s in spec['scenes'] for b in s.get('blocks') or [] if b.get('kind') == 'character' and b.get('id')}
     audio, real = [], True
     for k, ln in enumerate(lines):
         sp = ln.get('speaker', 'narrator')
-        voice = ln.get('voice') or (CAST_VOICE.get(speakers.get(sp), 'cori2') if sp != 'narrator' else narrator)
+        voice = ln.get('voice') or (CAST_VOICE.get(speakers.get(sp), 'kokoro:bf_isabella') if sp != 'narrator' else narrator)
         r = synth(ln['text'], voice, os.path.join(work, f'line{k}.wav'))
         if r is None:  # no voice models here (e.g. a local test): timed placeholder so captions and lip-sync still work
             real = False; dur = max(.8, len(ln['text'].split()) * .36)
@@ -136,7 +164,7 @@ def build_voice(spec, work, probs):
     starts = scene_starts(spec); out = []
     for k, ln in enumerate(lines):
         st = starts[ln['scene'] - 1] + float(ln.get('at') or 0)
-        out.append({'text': ln['text'], 'speaker': ln.get('speaker', 'narrator'), 'start': round(st, 3), 'end': round(st + audio[k][1], 3),
+        out.append({'text': re.sub(r'\[([^\]]+)\]\([^)]*\)', r'\1', ln['text']), 'speaker': ln.get('speaker', 'narrator'), 'start': round(st, 3), 'end': round(st + audio[k][1], 3),
                     'env': envelope(audio[k][0]), 'caption': ln.get('caption', True)})
     if not real: probs.append('note: voice models not installed here, so the voiceover is a silent placeholder (fine for a layout test)')
     return {'lines': out}, (audio, real)
