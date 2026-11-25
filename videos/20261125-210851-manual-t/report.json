@@ -1,0 +1,60 @@
+{
+  "ok": true,
+  "engine": "blocks",
+  "problems": [],
+  "notes": [],
+  "total": 24.39,
+  "timeline": [
+    {
+      "type": "hook",
+      "start": 0,
+      "dur": 3.8
+    },
+    {
+      "type": "scene",
+      "start": 3.38,
+      "dur": 3.73
+    },
+    {
+      "type": "scene",
+      "start": 6.69,
+      "dur": 2.9
+    },
+    {
+      "type": "reveal",
+      "start": 9.17,
+      "dur": 2.2
+    },
+    {
+      "type": "scene",
+      "start": 10.95,
+      "dur": 4.95
+    },
+    {
+      "type": "scene",
+      "start": 15.48,
+      "dur": 3.55
+    },
+    {
+      "type": "scene",
+      "start": 18.61,
+      "dur": 2.85
+    },
+    {
+      "type": "cta",
+      "start": 21.04,
+      "dur": 3.3
+    }
+  ],
+  "music": {
+    "track": "steel-pan-groove",
+    "title": "Sunny Steel Pan Groove",
+    "credit": "Music: \"Sunny Steel Pan Groove\" by BudgetPixel AI (https://budgetpixel.com/background-music/sunny-steel-pan-groove-9b6ca873), CC BY 4.0"
+  },
+  "music_credit": "Music: \"Sunny Steel Pan Groove\" by BudgetPixel AI (https://budgetpixel.com/background-music/sunny-steel-pan-groove-9b6ca873), CC BY 4.0",
+  "files": [
+    "video.mp4",
+    "video_4x5.mp4"
+  ],
+  "bytes": 14261483
+}
