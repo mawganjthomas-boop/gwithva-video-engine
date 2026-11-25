@@ -46,18 +46,28 @@ jobs:
         uses: actions/cache@v4
         with:
           path: voices
-          key: piper-voices-v1
+          key: piper-voices-v2
 
       - name: Download free voices (Piper, UK English)
         run: |
           mkdir -p voices
-          for v in en_GB-jenny_dioco-medium:jenny_dioco en_GB-alba-medium:alba en_GB-alan-medium:alan en_GB-northern_english_male-medium:northern_english_male en_GB-cori-medium:cori; do
-            name=${v%%:*}; dir=${v##*:}
+          for v in cori:high cori:medium alba:medium alan:medium northern_english_male:medium semaine:medium; do
+            dir=${v%%:*}; q=${v##*:}; name=en_GB-$dir-$q
             for ext in onnx onnx.json; do
-              [ -f "voices/$name.$ext" ] || curl -sSL -o "voices/$name.$ext" "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_GB/$dir/medium/$name.$ext"
+              [ -f "voices/$name.$ext" ] || curl -sSL -o "voices/$name.$ext" "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_GB/$dir/$q/$name.$ext"
             done
           done
           ls -la voices
+
+      - name: Cache music
+        uses: actions/cache@v4
+        with:
+          path: music/files
+          key: music-${{ hashFiles('music/library.json') }}
+          restore-keys: music-
+
+      - name: Download free music (BudgetPixel, CC BY 4.0)
+        run: python music_lib.py fetch
 
       - name: Write storyboard
         run: |
@@ -84,20 +94,36 @@ jobs:
           ok = rep.get('ok')
           dest = f"videos/{time.strftime('%Y%m%d-%H%M%S')}-{os.environ['PAGE_ID'][:8]}"
           if ok:
-              os.makedirs(dest, exist_ok=True)
-              for f in set(['video.mp4', 'cover.jpg', 'sheet.jpg', 'report.json'] + (rep.get('files') or [])): shutil.copy(f'out/{f}', f'{dest}/{f}')
-              shutil.copy('spec.json', f'{dest}/storyboard.json')
-              # keep the repo small: only the newest 40 videos are kept
-              olds = sorted(d for d in os.listdir('videos') if os.path.isdir(f'videos/{d}'))[:-40]
-              for d in olds: shutil.rmtree(f'videos/{d}')
+              os.makedirs(f'pub/{dest}', exist_ok=True)
+              for f in set(['video.mp4', 'cover.jpg', 'sheet.jpg', 'report.json'] + (rep.get('files') or [])): shutil.copy(f'out/{f}', f'pub/{dest}/{f}')
+              shutil.copy('spec.json', f'pub/{dest}/storyboard.json')
           with open(os.environ['GITHUB_OUTPUT'], 'a') as g:
               g.write(f"ok={'true' if ok else 'false'}\ndest={dest}\n")
           EOF
-          if [ "$(grep '^ok=' $GITHUB_OUTPUT | tail -1 | cut -d= -f2)" = "true" ]; then
-            git config user.name "gwithva-video-engine"
-            git config user.email "actions@users.noreply.github.com"
-            git add -A videos && git commit -qm "Video for $PAGE_ID" && git pull -q --rebase && git push -q
-          fi
+          [ "$(grep '^ok=' $GITHUB_OUTPUT | tail -1 | cut -d= -f2)" = "true" ] || exit 0
+          DEST=$(grep '^dest=' $GITHUB_OUTPUT | tail -1 | cut -d= -f2)
+          git config user.name "gwithva-video-engine"
+          git config user.email "actions@users.noreply.github.com"
+          # 1. The video files go to the "media" branch, which GitHub Pages serves. That branch is rebuilt as ONE commit
+          #    every time, so old videos really are deleted (no history piling up). A video is kept 21 days: by then it is
+          #    either in Buffer (approved posts are sent within hours) or was rejected.
+          rm -rf /tmp/media && mkdir -p /tmp/media
+          if git fetch -q --depth=1 origin media 2>/dev/null; then git archive FETCH_HEAD | tar -x -C /tmp/media; else cp -r videos /tmp/media/ 2>/dev/null || true; touch /tmp/media/.nojekyll; fi
+          mkdir -p /tmp/media/videos && cp -r pub/$DEST /tmp/media/videos/
+          python - <<'EOF'
+          import os, shutil, time, datetime
+          cut = (datetime.datetime.utcnow() - datetime.timedelta(days=21)).strftime('%Y%m%d')
+          for d in os.listdir('/tmp/media/videos'):
+              p = f'/tmp/media/videos/{d}'
+              if os.path.isdir(p) and d[:8].isdigit() and d[:8] < cut: shutil.rmtree(p); print('archived (deleted)', d)
+          EOF
+          (cd /tmp/media && git init -q && git checkout -q --orphan media && git add -A && git -c user.name=gwithva-video-engine -c user.email=actions@users.noreply.github.com commit -qm "Videos live on $(date -u +%F)" \
+            && git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" media)
+          # 2. main keeps only a small record of each video (storyboard + report). Until Pages is switched to the media
+          #    branch (the .pages-from-media file exists), main also keeps the files so links keep working.
+          mkdir -p $DEST
+          if [ -f .pages-from-media ]; then cp pub/$DEST/storyboard.json pub/$DEST/report.json $DEST/; else cp pub/$DEST/* $DEST/; fi
+          git add -A videos && git commit -qm "Video for $PAGE_ID" && git pull -q --rebase && git push -q
 
       - name: Wait until the video is live
         if: steps.pub.outputs.ok == 'true'
@@ -130,6 +156,7 @@ jobs:
               # extra versions from the blocks engine: 4:5 / 1:1 crops, extra hooks, the short cut
               body['extra_urls'] = ' '.join(f"{base}/{dest}/{f}" for f in (rep.get('files') or []) if f != 'video.mp4')
               body['notes'] = ' | '.join(rep.get('notes') or [])[:600]
+              body['music_credit'] = rep.get('music_credit', '')  # add this line to the end of the caption
           print(json.dumps(body, indent=2))
           if cb:
               req = urllib.request.Request(cb, data=json.dumps(body).encode(), headers={'Content-Type': 'application/json'})

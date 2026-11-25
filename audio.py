@@ -256,6 +256,8 @@ def render_audio(meta, spec, out_path):
 
     # ---------------- music ----------------
     mu = Mix(total, seed + 1); r2 = mu.rng
+    if (spec.get('music') or {}).get('sfx_only'):  # the blocks engine lays a library track on top instead
+        return _finish(sfx, mu, total, out_path, {'mood': mood, 'sfx_only': True})
     # 'bright' and 'driving' now use the bounce band (Mawgan, 13 Nov 2026: the old shared sound got repetitive).
     # 'bounce' keeps the original tune; bright/driving pick one of three tunes from the seed; driving is faster.
     if mood in ('bounce', 'bright', 'driving'):

@@ -232,26 +232,41 @@ B.character={build(L,b){const size=(b.size||40)/100*H;const e=el('div','blk',L);
   if(b.holds){const g=o.aR.querySelector('.held');const ps=svg(document.createElement('div'),'0 0 200 200',PROPS[b.holds]?PROPS[b.holds]():'','');g.innerHTML=`<g transform="translate(-60 -95) scale(.6)">${ps.innerHTML}</g>`;}
   return o;},
  cues(b,t0){cue(t0,'bloop');},
- update(o,b,lt,ctx){// position with optional moves
-  let x=(b.at||[50,80])[0],y=(b.at||[50,80])[1],walking=false;(b.move||[]).forEach(m=>{const p=seg(lt,m.at||0,(m.at||0)+(m.dur||1));if(p>0){if(p<1)walking=true;const from=[x,y];x=lerp(from[0],m.to[0],eio(p));y=lerp(from[1],m.to[1],eio(p));}});
+ update(o,b,lt,ctx){
+  // --- where: optional moves, and walk-in entrances (in: walk-l / walk-r) ---
+  let x=(b.at||[50,80])[0],y=(b.at||[50,80])[1],walking=false,dir=b.flip?-1:1;
+  const ent=b.in||'rise';if(ent==='walk-l'||ent==='walk-r'){const p=seg(lt,0,.9);const from=ent==='walk-l'?-22:122;if(p<1){walking=true;dir=ent==='walk-l'?1:-1;}x=lerp(from,x,eio(p));}
+  (b.move||[]).forEach(m=>{const p=seg(lt,m.at||0,(m.at||0)+(m.dur||1));if(p>0){if(p<1){walking=true;dir=m.to[0]>=x?1:-1;}const from=[x,y];x=lerp(from[0],m.to[0],eio(p));y=lerp(from[1],m.to[1],eio(p));}});
   o.e.style.left=(x/100*W)+'px';o.e.style.top=(y/100*H)+'px';
-  // pose and mood can change over time: b.poses=[{at, pose, mood}]
-  let pose=b.pose||'idle',mood=b.mood||'happy';(b.changes||[]).forEach(c=>{if(lt>=c.at){if(c.pose)pose=c.pose;if(c.mood)mood=c.mood;}});
-  const P0=POSES[pose]||POSES.idle,M=MOODS[mood]||MOODS.happy;
-  const wav=pose==='wave'?Math.sin(lt*9)*18:0,brth=Math.sin(lt*2.4);
+  // --- pose and mood, blended smoothly when they change (changes: [{at, pose, mood}]) ---
+  let pose=b.pose||'idle',prev=pose,mood=b.mood||'happy',ct=-9;(b.changes||[]).forEach(c=>{if(lt>=c.at){if(c.pose&&c.pose!==pose){prev=pose;pose=c.pose;ct=c.at;}if(c.mood){mood=c.mood;ct=Math.max(ct,c.at);}}});
+  const bp=eio(seg(lt,ct,ct+.35));const PA=POSES[prev]||POSES.idle,PB=POSES[pose]||POSES.idle,M=MOODS[mood]||MOODS.happy;
+  const mix=(k,i)=>lerp(PA[k][i],PB[k][i],bp);
+  const ant=ct>0?Math.sin(seg(lt,ct,ct+.35)*Math.PI)*-6:0; // a little dip as the gesture starts (anticipation)
+  const wav=pose==='wave'?Math.sin(lt*9)*18*bp:0,brth=Math.sin(lt*2.4),sway=Math.sin(lt*1.1);
+  const talk=ctx.mouthFor(b.id,lt);const gest=talk>.05&&!walking&&pose!=='phone'?Math.sin(lt*5.2)*6*talk:0; // hands move a little while talking
   const rot=(g,a,e2)=>{g.querySelector('.up').setAttribute('transform',`rotate(${a})`);g.querySelector('.lo').setAttribute('transform',`translate(0 92) rotate(${e2})`);};
-  rot(o.aL,P0.L[0]+brth*1.5,P0.L[1]);rot(o.aR,P0.R[0]-brth*1.5+wav,P0.R[1]+wav*.6);
-  const st=walking?Math.sin(lt*11)*22:0;o.lgL.setAttribute('transform',`translate(165 488) rotate(${st})`);o.lgR.setAttribute('transform',`translate(235 488) rotate(${-st})`);
-  o.body.setAttribute('transform',`translate(0 ${walking?-Math.abs(Math.sin(lt*11))*10:brth*3})`);
-  const tilt=pose==='phone'?8:pose==='think'?-6:Math.sin(lt*1.3)*2.5;o.head.setAttribute('transform',`rotate(${tilt} 200 290)`);
-  // eyes: blink every ~3.1s, closed/half moods
-  const bl=((lt+(b.blinkOffset||0))%3.1)<.12;const ey=M.eyes==='closed'?.12:M.eyes==='half'?.5:1;o.eyes.forEach(g=>{const tr=g.getAttribute('transform').split(' scale')[0];g.setAttribute('transform',`${tr} scale(1 ${bl?.1:ey})`);});
-  const bt=M.browTilt||0;o.browL.setAttribute('transform',`translate(0 ${M.brow}) rotate(${bt} 161 148)`);o.browR.setAttribute('transform',`translate(0 ${M.brow}) rotate(${-bt} 239 148)`);
-  const talk=ctx.mouthFor(b.id,lt);o.mouth.setAttribute('d',mouthPath(M.mouth,talk));
+  const swing=walking?Math.sin(lt*11)*16:0;
+  rot(o.aL,mix('L',0)+brth*1.5+swing+gest*.5,mix('L',1));rot(o.aR,mix('R',0)-brth*1.5+wav-swing-gest,mix('R',1)+wav*.6+gest);
+  const st=walking?Math.sin(lt*11)*24:0;o.lgL.setAttribute('transform',`translate(165 488) rotate(${st})`);o.lgR.setAttribute('transform',`translate(235 488) rotate(${-st})`);
+  const bob=walking?-Math.abs(Math.sin(lt*11))*12:brth*3+ant;
+  o.body.setAttribute('transform',`translate(${sway*3} ${bob}) rotate(${sway*1.2} 200 600)`);
+  // head follows the body a beat later (overlapping action), nods while talking
+  const tiltBase=pose==='phone'?8:pose==='think'?-6:pose==='facepalm'?6:0;const tilt=tiltBase+Math.sin((lt-.18)*1.1)*2.2+(walking?Math.sin((lt-.05)*11)*2:0)+talk*Math.sin(lt*7)*3;
+  o.head.setAttribute('transform',`translate(${Math.sin((lt-.2)*1.1)*3} ${talk*-3}) rotate(${tilt} 200 290)`);
+  // eyes: natural blinks (also on every pose/mood change), look direction
+  const bo=b.blinkOffset!=null?b.blinkOffset:(b.id||'').length*.37;const cyc=(lt+bo)%3.4;const bl=cyc<.11||(lt-ct>=0&&lt-ct<.1);
+  const ey=M.eyes==='closed'?.12:M.eyes==='half'?.5:1;const look={left:[-6,0],right:[6,0],up:[0,-6],down:[0,5]}[b.look]||[0,0];
+  o.eyes.forEach((g,i)=>{const bx=i?238:162;g.setAttribute('transform',`translate(${bx+look[0]} ${185+look[1]}) scale(1 ${bl?.08:ey})`);});
+  const bt=M.browTilt||0,br=M.brow+(talk>.3?-3:0);o.browL.setAttribute('transform',`translate(0 ${br}) rotate(${bt} 161 148)`);o.browR.setAttribute('transform',`translate(0 ${br}) rotate(${-bt} 239 148)`);
+  o.mouth.setAttribute('d',mouthPath(M.mouth,Math.pow(talk,.75)));
   o.fx.innerHTML=M.sweat?`<g transform="translate(0 ${(lt*60)%40}) scale(.35)">${PROPS.sweat()}</g>`:'';
-  o.all.setAttribute('transform',b.flip?'translate(400 0) scale(-1 1)':'');
-  o.e.style.transformOrigin='50% 100%';const a=animIn(b.in||'rise',seg(lt,0,.5));
-  o.e.style.transform=`translate(-50%,-100%) translate(${a.x}px,${a.y}px) scale(${a.s})`;o.e.style.opacity=a.o;return null;}};
+  const flip=dir<0||(b.flip&&!walking);o.all.setAttribute('transform',flip?'translate(400 0) scale(-1 1)':'');
+  // entrance with squash and stretch on landing
+  o.e.style.transformOrigin='50% 100%';let sx=1,sy=1,ty=0,op=1;
+  if(ent==='drop'||ent==='pop'||ent==='rise'){if(ent==='drop'){ty=-(1-eo(seg(lt,0,.3)))*900;}else if(ent==='rise'){ty=(1-eo(seg(lt,0,.3)))*120;op=cl(lt*5);}
+   const land=seg(lt,.28,.55);const sq=Math.sin(land*Math.PI)*(1-land);sx=1+sq*.12;sy=1-sq*.12;if(ent==='pop'){const k=eb(seg(lt,0,.4));sx*=k;sy*=k;}}
+  o.e.style.transform=`translate(-50%,-100%) translate(0px,${ty}px) scale(${sx},${sy})`;o.e.style.opacity=op;return null;}};
 B.prop={build(L,b){const e=el('div','blk',L);const s=(b.size||16)/100*W;propSvg(e,b.name,s);place(e,b);return {e};},
  cues(b,t0){cue(t0,b.name==='sparkle'||b.name==='star'?'sparkle':'pop');},
  update(o,b,lt){const a=animIn(b.in||'pop',seg(lt,0,.45));const f=loopFx(b.loop||'',lt);return {o:a.o,s:a.s*f.s,x:a.x,y:a.y+f.y,r:a.r+f.r};}};
@@ -322,8 +337,8 @@ B.app={build(L,b){const box=el('div','phone',L);const w=(b.w||66)/100*W;box.styl
  update(o,b,lt){if(o.cw)o.cw.setTime(o.t0+Math.min(lt,o.dur-.05));const a=animIn(b.in||'rise',seg(lt,0,.5));o.e.style.transform=`translate(-50%,-50%) translate(${a.x}px,${a.y}px) scale(${a.s})`;o.e.style.opacity=a.o;return null;}};
 
 /* ===================== scenes, captions, timeline ===================== */
-let SC=[],TOTAL=0,VOICE=null,CAPS=[],LOOP=false;const TR=.35;
-function mouthFor(id,t,sceneStart){if(!VOICE||!id)return 0;const g=sceneStart+t;for(const ln of VOICE.lines){if(ln.speaker===id&&g>=ln.start&&g<ln.end){const i=Math.floor((g-ln.start)*30);const v=(ln.env||[])[i];return v==null?(.4+.4*Math.abs(Math.sin(g*14))):v;}}return 0;}
+let SC=[],TOTAL=0,VOICE=null,CAPS=[],LOOP=false;const TR=.42;
+function mouthFor(id,t,sceneStart){if(!VOICE||!id)return 0;const g=sceneStart+t;for(const ln of VOICE.lines){if(ln.speaker===id&&g>=ln.start&&g<ln.end){const i=Math.floor((g-ln.start)*30);const e=ln.env||[];const v=e[i];if(v==null)return .4+.4*Math.abs(Math.sin(g*14));return ((e[i-1]??v)+2*v+(e[i+1]??v))/4;}}return 0;}
 async function init(spec,voice){const stage=document.getElementById('stage');stage.innerHTML='';SC=[];CUES.length=0;PROBLEMS.length=0;VOICE=voice||null;LOOP=!!spec.loop;
  let t=0;const scenes=spec.scenes||[];
  for(let i=0;i<scenes.length;i++){const s=scenes[i];const L=el('div','scene',stage);L.style.zIndex=i+1;const cam=el('div','cam',L);
@@ -337,11 +352,16 @@ async function init(spec,voice){const stage=document.getElementById('stage');sta
  // cues
  SC.forEach((x,i)=>{if(i>0)cue(x.start,x.tr==='cut'?'flick':x.tr==='zoom'?'boom':'whoosh');x.blocks.forEach(bl=>{if(B[bl.kind].cues&&!bl.b.silent)B[bl.kind].cues(bl.b,x.start+(bl.b.t||0),bl.o);});});
  CUES.sort((a,b)=>a.t-b.t);
+ // captions go where they cover the least: try bands low, middle-low, then high
+ SC.forEach(x=>{x.L.style.display='block';const rs=[];x.blocks.forEach(bl=>{if(!bl.o.e||['burst','arrow','circle'].includes(bl.kind)||(bl.kind==='image'&&bl.b.frame==='full'))return;applyBlock(bl,(bl.b.t||0)+3,x,{wait:[]});let r=bl.o.e.getBoundingClientRect();
+   if(bl.kind==='character')r={left:r.left,right:r.right,top:r.top,bottom:r.top+(r.bottom-r.top)*.42};rs.push(r);});
+  const cand=spec.captions_y?[spec.captions_y]:[70,63,24,56,31];let best=cand[0],bo=1e18;cand.forEach((cy,i)=>{const top=cy/100*H,bot=top+170;let ov=0;rs.forEach(r=>{const w=Math.max(0,Math.min(r.right,930)-Math.max(r.left,150)),h=Math.max(0,Math.min(r.bottom,bot)-Math.max(r.top,top));ov+=w*h;});ov+=i*900;if(ov<bo){bo=ov;best=cy;}});
+  x.capY=best;x.L.style.display='none';});
  // safe-zone check for text and end card (platform buttons cover the right edge and the bottom)
  SC.forEach((x,i)=>{x.L.style.display='block';x.blocks.forEach(bl=>{if(!['text','cta','bubble','checklist','counter'].includes(bl.kind)||bl.b.unsafe)return;applyBlock(bl,(bl.b.t||0)+3,x,{wait:[]});const r=bl.o.e.getBoundingClientRect();
    if(r.left<0.04*W||r.right>0.88*W||r.top<0.10*H||r.bottom>0.80*H)PROBLEMS.push(`Scene ${i+1}: ${bl.kind} "${String(bl.b.text||bl.b.button||'').slice(0,40)}" sits outside the safe zone (keep x 4-88%, y 10-80%)`);});x.L.style.display='none';});
  // captions from the voiceover, in short chunks
- CAPS=[];document.getElementById('caps').style.top=((spec.captions_y||67)/100*H)+'px';if(VOICE)VOICE.lines.forEach(ln=>{if(ln.caption===false)return;const ws=ln.text.split(/\s+/);const n=Math.max(1,Math.ceil(ws.length/4));const per=(ln.end-ln.start)/n;for(let k=0;k<n;k++)CAPS.push({a:ln.start+k*per,b:ln.start+(k+1)*per,words:ws.slice(k*4,k*4+4)});});
+ CAPS=[];if(VOICE)VOICE.lines.forEach(ln=>{if(ln.caption===false)return;const ws=ln.text.split(/\s+/);const n=Math.max(1,Math.ceil(ws.length/4));const per=(ln.end-ln.start)/n;for(let k=0;k<n;k++)CAPS.push({a:ln.start+k*per,b:ln.start+(k+1)*per,words:ws.slice(k*4,k*4+4)});});
  const g=document.getElementById('grain').getContext('2d');GR=g;
  return {total:TOTAL,cues:CUES,problems:PROBLEMS,timeline:SC.map((x,i)=>({type:x.s.role||(i===0?'hook':i===SC.length-1?'cta':x.blocks.some(b=>b.kind==='logo')?'reveal':'scene'),start:+x.start.toFixed(2),dur:+x.dur.toFixed(2)}))};}
 let GR=null;
@@ -358,14 +378,17 @@ async function setTime(t){const ctx={wait:[]};
   let st='';x.L.style.opacity=1;
   if(i>0&&lt<TR){const p=eio(seg(lt,0,TR));if(x.tr==='slide')st=`translateX(${(1-p)*1080}px)`;else if(x.tr==='zoom'){st=`scale(${lerp(1.6,1,p)})`;x.L.style.opacity=p;}else if(x.tr==='whip')st=`translateY(${(1-p)*1920}px)`;else if(x.tr==='fade')x.L.style.opacity=p;}
   if(LOOP&&i===0&&t>TOTAL-.4){x.L.style.zIndex=999;x.L.style.opacity=seg(t,TOTAL-.4,TOTAL-.05);}
+  if(nx&&nx.tr!=='cut'&&t>nx.start){const p=eio(seg(t,nx.start,nx.start+TR));if(nx.tr==='slide')st=`translateX(${-p*380}px) scale(${1-p*.04})`;else if(nx.tr==='whip')st=`translateY(${-p*600}px)`;else if(nx.tr==='zoom')st=`scale(${1+p*.25})`;x.L.style.filter=`brightness(${1-p*.25})`;}else x.L.style.filter='';
   x.L.style.transform=st;
   // camera move: s.camera = {zoom:[from,to], pan:[[x,y],[x,y]]} over the scene
-  const cm=x.s.camera;if(cm){const p=eio(seg(lt,0,x.dur));const z=cm.zoom?lerp(cm.zoom[0],cm.zoom[1],p):1;const pn=cm.pan||[[50,50],[50,50]];const px=lerp(pn[0][0],pn[1][0],p),py=lerp(pn[0][1],pn[1][1],p);x.cam.style.transformOrigin=`${px}% ${py}%`;x.cam.style.transform=`scale(${z})`;}
+  const cm=x.s.camera||(x.s.drift===false?null:{zoom:[1,1.035]});if(cm){const p=eio(seg(lt,0,x.dur));const z=cm.zoom?lerp(cm.zoom[0],cm.zoom[1],p):1;const pn=cm.pan||[[50,50],[50,50]];const px=lerp(pn[0][0],pn[1][0],p),py=lerp(pn[0][1],pn[1][1],p);x.cam.style.transformOrigin=`${px}% ${py}%`;x.cam.style.transform=`scale(${z})`;}
   if(x.s.shake&&lt<.4){x.cam.style.transform+=` translate(${Math.sin(lt*80)*14*(1-lt/.4)}px,0)`;}
   const lt2=(LOOP&&i===0&&t>TOTAL-.4)?.05:lt;
   x.blocks.forEach(bl=>applyBlock(bl,lt2,x,ctx));});
  // captions
  const cp=document.getElementById('caps');const c=CAPS.find(c=>t>=c.a&&t<c.b);cp.innerHTML=c?`<span>${c.words.map(esc).join(' ')}</span>`:'';
+ const cur=[...SC].reverse().find(x=>t>=x.start);if(cur)cp.style.top=(cur.capY/100*H)+'px';
+ if(c){const k=seg(t,c.a,c.a+.12);cp.style.transform=`translateY(${(1-eo(k))*14}px)`;cp.style.opacity=k;}
  grain(t);if(ctx.wait.length)await Promise.all(ctx.wait);}
 window.init=init;window.setTime=setTime;
 </script></body></html>

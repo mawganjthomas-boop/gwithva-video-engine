@@ -16,9 +16,20 @@ FPS = 30
 TR = .35
 VOICE_DIR = HERE / 'voices'
 # Piper voice per character (all free, UK English). The narrator defaults to Jenny.
-VOICES = {'jenny': 'en_GB-jenny_dioco-medium', 'alba': 'en_GB-alba-medium', 'alan': 'en_GB-alan-medium',
-          'northern': 'en_GB-northern_english_male-medium', 'cori': 'en_GB-cori-medium'}
-CAST_VOICE = {'kerra': 'jenny', 'amira': 'alba', 'jago': 'northern', 'dev': 'alan', 'tamsin': 'cori', 'ollie': 'alan', 'grace': 'alba'}
+# Jenny was dropped (25 Nov 2026): Mawgan heard it as slightly Irish. Narrator is now Cori (southern English, high quality).
+# 'semaine:<name>' picks one speaker from the four-speaker English Semaine voice.
+VOICES = {'cori': 'en_GB-cori-high', 'cori2': 'en_GB-cori-medium', 'alba': 'en_GB-alba-medium', 'alan': 'en_GB-alan-medium',
+          'northern': 'en_GB-northern_english_male-medium', 'semaine': 'en_GB-semaine-medium'}
+CAST_VOICE = {'kerra': 'semaine:prudence', 'amira': 'semaine:poppy', 'tamsin': 'cori2', 'grace': 'alba',
+              'jago': 'northern', 'dev': 'semaine:obadiah', 'ollie': 'alan'}
+# How to say words the voices get wrong. Spelled the way it sounds; change here and every video follows.
+PRONOUNCE = {r'\bgwithva\.app\b': 'Gwithvah dot app', r'\bgwithva dot app\b': 'Gwithvah dot app', r'\bGwithva\b': 'Gwithvah',
+             r'\bAirbnb\b': 'Air B and B', r'\bDBS\b': 'D B S', r'\b10pm\b': 'ten P M'}
+
+
+def say(text):
+    for pat, rep in PRONOUNCE.items(): text = re.sub(pat, rep, text, flags=re.I)
+    return text
 
 
 def scene_starts(spec):
@@ -61,16 +72,27 @@ def fetch_media(spec, work):
 
 def synth(text, voice, path):
     """Piper TTS to a wav file. Returns (samples at SR mono float32, duration) or None if Piper isn't available."""
-    model = VOICE_DIR / f'{VOICES.get(voice, VOICES["jenny"])}.onnx'
+    base, _, spk = voice.partition(':')
+    model = VOICE_DIR / f'{VOICES.get(base, VOICES["cori"])}.onnx'
     if not model.exists(): return None
+    text = say(text)
+    sid = None
+    if spk:
+        try: sid = json.load(open(str(model) + '.json')).get('speaker_id_map', {}).get(spk)
+        except Exception: sid = None
     try:
         from piper import PiperVoice
         v = PiperVoice.load(str(model))
         with wave.open(path, 'wb') as wf:
-            if hasattr(v, 'synthesize_wav'): v.synthesize_wav(text, wf)
-            else: v.synthesize(text, wf)
+            if hasattr(v, 'synthesize_wav'):
+                try:
+                    from piper import SynthesisConfig
+                    v.synthesize_wav(text, wf, syn_config=SynthesisConfig(speaker_id=sid, length_scale=1.0, noise_scale=.6, noise_w_scale=.7))
+                except ImportError: v.synthesize_wav(text, wf)
+            else: v.synthesize(text, wf, speaker_id=sid)
     except Exception:
-        r = subprocess.run([sys.executable, '-m', 'piper', '-m', str(model), '-f', path], input=text.encode(), capture_output=True)
+        args = [sys.executable, '-m', 'piper', '-m', str(model), '-f', path] + (['--speaker', str(sid)] if sid is not None else [])
+        r = subprocess.run(args, input=text.encode(), capture_output=True)
         if r.returncode: return None
     w = wave.open(path); n = w.getnframes(); sr = w.getframerate()
     x = np.frombuffer(w.readframes(n), dtype='<i2').astype(np.float32) / 32768; w.close()
@@ -91,12 +113,12 @@ def build_voice(spec, work, probs):
     vs = spec.get('voice') or {}
     lines = vs.get('lines') or []
     if not lines: return None, None
-    narrator = vs.get('narrator', 'jenny')
+    narrator = vs.get('narrator', 'cori')
     speakers = {b.get('id'): b.get('who') for s in spec['scenes'] for b in s.get('blocks') or [] if b.get('kind') == 'character' and b.get('id')}
     audio, real = [], True
     for k, ln in enumerate(lines):
         sp = ln.get('speaker', 'narrator')
-        voice = ln.get('voice') or (CAST_VOICE.get(speakers.get(sp), 'jenny') if sp != 'narrator' else narrator)
+        voice = ln.get('voice') or (CAST_VOICE.get(speakers.get(sp), 'cori2') if sp != 'narrator' else narrator)
         r = synth(ln['text'], voice, os.path.join(work, f'line{k}.wav'))
         if r is None:  # no voice models here (e.g. a local test): timed placeholder so captions and lip-sync still work
             real = False; dur = max(.8, len(ln['text'].split()) * .36)
@@ -120,8 +142,9 @@ def build_voice(spec, work, probs):
     return {'lines': out}, (audio, real)
 
 
-def mix_voice(music_wav, voice, audio, out_wav, total):
-    w = wave.open(music_wav); n = w.getnframes(); m = np.frombuffer(w.readframes(n), dtype='<i2').astype(np.float32).reshape(-1, 2) / 32768; w.close()
+def mix_voice(base_wav, voice, audio, out_wav, total, track=None):
+    """base_wav: sound effects (and the engine's own music when no library track). track: library music, ducked under the voice."""
+    w = wave.open(base_wav); n = w.getnframes(); m = np.frombuffer(w.readframes(n), dtype='<i2').astype(np.float32).reshape(-1, 2) / 32768; w.close()
     v = np.zeros(len(m), np.float32)
     if voice and audio and audio[1]:
         for ln, (x, _) in zip(voice['lines'], audio[0]):
@@ -129,9 +152,13 @@ def mix_voice(music_wav, voice, audio, out_wav, total):
     duck = np.ones(len(m), np.float32)
     if np.abs(v).max() > 0:
         env = np.convolve(np.abs(v), np.ones(int(.12 * SR)) / int(.12 * SR), 'same')
-        duck = 1 - .6 * np.clip(env / (env.max() * .25 + 1e-6), 0, 1)
+        duck = 1 - .55 * np.clip(env / (env.max() * .25 + 1e-6), 0, 1)
         v = v / np.abs(v).max() * .9
-    mix = m * duck[:, None] + v[:, None]
+    if track is not None:
+        mus = np.zeros_like(m); k = min(len(track), len(m)); mus[:k] = track[:k]
+        mix = m * .45 + mus * .42 * duck[:, None] + v[:, None]
+    else:
+        mix = m * duck[:, None] + v[:, None]
     mix *= .95 / max(1e-6, np.abs(mix).max())
     w = wave.open(out_wav, 'wb'); w.setnchannels(2); w.setsampwidth(2); w.setframerate(SR)
     w.writeframes((mix * 32767).astype('<i2').tobytes()); w.close()
@@ -164,12 +191,19 @@ def render_one(pg, spec, voice, out, name, want_sheet):
 
 
 def finish_audio(meta, spec, voice, vaudio, out, name):
-    render_audio(meta, spec, f'{out}/{name}_music.wav')
-    mix_voice(f'{out}/{name}_music.wav', voice, vaudio, f'{out}/{name}_audio.wav', meta['total'])
+    import music_lib
+    mu = spec.get('music') or {}
+    t = None if mu.get('source') == 'engine' else music_lib.pick(mu.get('mood', 'bright'), int(spec.get('seed', 7)), mu.get('track'))
+    sp = json.loads(json.dumps(spec))
+    if t: sp.setdefault('music', {})['sfx_only'] = True
+    info = render_audio(meta, sp, f'{out}/{name}_music.wav')
+    track = music_lib.lay(t, meta['total']) if t else None
+    mix_voice(f'{out}/{name}_music.wav', voice, vaudio, f'{out}/{name}_audio.wav', meta['total'], track)
     subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', f'{out}/{name}_silent.mp4', '-i', f'{out}/{name}_audio.wav', '-map', '0:v', '-map', '1:a',
                     '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-af', 'loudnorm=I=-14:TP=-1.5:LRA=11', '-ar', '48000', '-shortest',
                     '-movflags', '+faststart', f'{out}/{name}.mp4'], check=True)
     for f in (f'{name}_silent.mp4', f'{name}_music.wav', f'{name}_audio.wav'): os.remove(f'{out}/{f}')
+    return {'track': t['id'], 'title': t['title'], 'credit': music_lib.credit(t)} if t else dict(info or {}, track='engine')
 
 
 def crops(out, name, formats):
@@ -219,9 +253,11 @@ def main_blocks(spec, out):
                 report['problems'] += [f'{name}: {x}' for x in probs]
                 if k == 0: json.dump(report, open(f'{out}/report.json', 'w'), indent=2); print('\n'.join(report['problems'])); b.close(); return 3
                 continue
-            finish_audio(meta, sp, v, va, out, name)
+            mi = finish_audio(meta, sp, v, va, out, name)
             files.append(f'{name}.mp4'); files += crops(out, name, spec.get('formats') or [])
-            if k == 0: report.update(total=meta['total'], timeline=meta['timeline'])
+            if k == 0:
+                report.update(total=meta['total'], timeline=meta['timeline'], music=mi)
+                if mi.get('credit'): report['music_credit'] = mi['credit']
         b.close()
     subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-pattern_type', 'glob', '-i', f'{out}/sheet_*.jpg',
                     '-vf', 'scale=270:480,tile=6x2', '-frames:v', '1', '-q:v', '3', f'{out}/sheet.jpg'], check=True)

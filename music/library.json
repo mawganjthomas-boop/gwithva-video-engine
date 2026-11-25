@@ -1,0 +1,19 @@
+{"_about": "Free music for the blocks engine. All from BudgetPixel's library: CC BY 4.0, free for commercial use including ads, never registered with Content ID. The one condition is a credit, which the engine returns as music_credit for the caption. To add a track: copy a track page URL from https://budgetpixel.com/background-music, give it moods, and the workflow downloads it next run.",
+ "tracks": [
+  {"id": "ukulele-bounce", "title": "Cheerful Ukulele Bounce", "page": "https://budgetpixel.com/background-music/cheerful-ukulele-bounce-c7ba13c8", "moods": ["bright", "bounce", "warm"]},
+  {"id": "sunny-vlog-outro", "title": "Sunny Vlog Outro", "page": "https://budgetpixel.com/background-music/sunny-vlog-outro-72d8a058", "moods": ["warm", "bright"]},
+  {"id": "beach-day-pop", "title": "Beach Day Summer Pop Anthem", "page": "https://budgetpixel.com/background-music/beach-day-summer-pop-anthem-f00258e9", "moods": ["bright", "driving"]},
+  {"id": "sunny-afro-bounce", "title": "Sunny Afro Bounce", "page": "https://budgetpixel.com/background-music/sunny-afro-bounce-3693bd88", "moods": ["bounce", "bright"]},
+  {"id": "steel-pan-groove", "title": "Sunny Steel Pan Groove", "page": "https://budgetpixel.com/background-music/sunny-steel-pan-groove-9b6ca873", "moods": ["bright", "bounce"]},
+  {"id": "playful-puzzle", "title": "Playful Puzzle Bounce", "page": "https://budgetpixel.com/background-music/playful-puzzle-bounce-17dddc66", "moods": ["bounce", "cartoon"]},
+  {"id": "puzzle-marimba", "title": "Puzzle Focus Marimba", "page": "https://budgetpixel.com/background-music/puzzle-focus-marimba-ca2833c6", "moods": ["cartoon", "warm"]},
+  {"id": "cartoon-chase", "title": "Cartoon Chase Romp", "page": "https://budgetpixel.com/background-music/cartoon-chase-romp-b6923498", "moods": ["cartoon", "driving"]},
+  {"id": "g-funk-bounce", "title": "Bouncy West Coast G-Funk", "page": "https://budgetpixel.com/background-music/bouncy-west-coast-g-funk-4cb139fb", "moods": ["bounce", "driving"]},
+  {"id": "finance-groove", "title": "Corporate Finance Groove", "page": "https://budgetpixel.com/background-music/corporate-finance-groove-0fa46928", "moods": ["driving", "bright"]},
+  {"id": "motivational-build", "title": "Rising Motivational Build", "page": "https://budgetpixel.com/background-music/rising-motivational-build-594310f8", "moods": ["driving", "warm"]},
+  {"id": "warm-welcome", "title": "Warm Welcome Podcast Theme", "page": "https://budgetpixel.com/background-music/warm-welcome-podcast-theme-98682ba9", "moods": ["warm"]},
+  {"id": "cafe-bossa", "title": "Sunlit Café Bossa", "page": "https://budgetpixel.com/background-music/sunlit-caf-bossa-ffd8148f", "moods": ["warm"]},
+  {"id": "sunday-rhodes", "title": "Lazy Sunday Rhodes", "page": "https://budgetpixel.com/background-music/lazy-sunday-rhodes-14f2a914", "moods": ["warm"]},
+  {"id": "synth-cruise", "title": "Sunset Synth Cruise", "page": "https://budgetpixel.com/background-music/sunset-synth-cruise-46248858", "moods": ["driving"]},
+  {"id": "synth-intro", "title": "Synth Youtube Intro", "page": "https://budgetpixel.com/background-music/synth-youtube-intro-7fa396f1", "moods": ["driving", "bright"]}
+ ]}
