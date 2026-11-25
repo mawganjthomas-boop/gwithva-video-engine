@@ -359,7 +359,12 @@ async function init(spec,voice){const stage=document.getElementById('stage');sta
   const cand=spec.captions_y?[spec.captions_y]:[70,63,24,56,31];let best=cand[0],bo=1e18;cand.forEach((cy,i)=>{const top=cy/100*H,bot=top+170;let ov=0;rs.forEach(r=>{const w=Math.max(0,Math.min(r.right,930)-Math.max(r.left,150)),h=Math.max(0,Math.min(r.bottom,bot)-Math.max(r.top,top));ov+=w*h;});ov+=i*900;if(ov<bo){bo=ov;best=cy;}});
   x.capY=best;x.L.style.display='none';});
  // safe-zone check for text and end card (platform buttons cover the right edge and the bottom)
- SC.forEach((x,i)=>{x.L.style.display='block';x.blocks.forEach(bl=>{if(!['text','cta','bubble','checklist','counter'].includes(bl.kind)||bl.b.unsafe)return;applyBlock(bl,(bl.b.t||0)+3,x,{wait:[]});const r=bl.o.e.getBoundingClientRect();
+ SC.forEach((x,i)=>{x.L.style.display='block';x.blocks.forEach(bl=>{if(!['text','cta','bubble','checklist','counter'].includes(bl.kind)||bl.b.unsafe)return;applyBlock(bl,(bl.b.t||0)+3,x,{wait:[]});let r=bl.o.e.getBoundingClientRect();
+   // fix it ourselves first: pull it inside the zone, then shrink the text until it fits
+   const out=r=>r.left<0.04*W||r.right>0.88*W||r.top<0.10*H||r.bottom>0.80*H;
+   for(let k=0;k<14&&out(r);k++){const at=bl.b.at||[50,50];if(r.top<0.10*H)at[1]+=((0.10*H-r.top)/H*100)+.5;if(r.bottom>0.80*H)at[1]-=((r.bottom-0.80*H)/H*100)+.5;if(r.right>0.88*W||r.left<0.04*W){at[0]=46;}
+    bl.b.at=at;bl.o.e.style.left=(at[0]/100*W)+'px';bl.o.e.style.top=(at[1]/100*H)+'px';if(k>1||r.right-r.left>0.84*W){const fs=parseFloat(getComputedStyle(bl.o.e).fontSize);bl.o.e.style.fontSize=(fs*.92)+'px';if(parseFloat(bl.o.e.style.width)>0.80*W)bl.o.e.style.width=(0.80*W)+'px';}
+    applyBlock(bl,(bl.b.t||0)+3,x,{wait:[]});r=bl.o.e.getBoundingClientRect();}
    if(r.left<0.04*W||r.right>0.88*W||r.top<0.10*H||r.bottom>0.80*H)PROBLEMS.push(`Scene ${i+1}: ${bl.kind} "${String(bl.b.text||bl.b.button||'').slice(0,40)}" sits outside the safe zone (keep x 4-88%, y 10-80%)`);});x.L.style.display='none';});
  // captions from the voiceover, in short chunks
  CAPS=[];if(VOICE)VOICE.lines.forEach(ln=>{if(ln.caption===false)return;const ws=ln.text.split(/\s+/);const n=Math.max(1,Math.ceil(ws.length/4));const per=(ln.end-ln.start)/n;for(let k=0;k<n;k++)CAPS.push({a:ln.start+k*per,b:ln.start+(k+1)*per,words:ws.slice(k*4,k*4+4)});});
