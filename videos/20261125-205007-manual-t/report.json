@@ -1,0 +1,60 @@
+{
+  "ok": true,
+  "engine": "blocks",
+  "problems": [],
+  "notes": [],
+  "total": 22.72,
+  "timeline": [
+    {
+      "type": "hook",
+      "start": 0,
+      "dur": 3.51
+    },
+    {
+      "type": "scene",
+      "start": 3.09,
+      "dur": 3.56
+    },
+    {
+      "type": "scene",
+      "start": 6.23,
+      "dur": 2.9
+    },
+    {
+      "type": "reveal",
+      "start": 8.71,
+      "dur": 2.2
+    },
+    {
+      "type": "scene",
+      "start": 10.49,
+      "dur": 4.77
+    },
+    {
+      "type": "scene",
+      "start": 14.84,
+      "dur": 3.2
+    },
+    {
+      "type": "scene",
+      "start": 17.62,
+      "dur": 2.47
+    },
+    {
+      "type": "cta",
+      "start": 19.67,
+      "dur": 3
+    }
+  ],
+  "music": {
+    "track": "ukulele-bounce",
+    "title": "Cheerful Ukulele Bounce",
+    "credit": "Music: \"Cheerful Ukulele Bounce\" by BudgetPixel AI (https://budgetpixel.com/background-music/cheerful-ukulele-bounce-c7ba13c8), CC BY 4.0"
+  },
+  "music_credit": "Music: \"Cheerful Ukulele Bounce\" by BudgetPixel AI (https://budgetpixel.com/background-music/cheerful-ukulele-bounce-c7ba13c8), CC BY 4.0",
+  "files": [
+    "video.mp4",
+    "video_4x5.mp4"
+  ],
+  "bytes": 13362650
+}
