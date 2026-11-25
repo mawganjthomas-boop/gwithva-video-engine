@@ -328,13 +328,14 @@ B.image={build(L,b){const fr=b.frame||'phone';let src=b.src||'';if(src.startsWit
 // live app screens from the v1 engine (all 9 screens with this video's sample data), in a phone frame
 B.app={build(L,b){const box=el('div','phone',L);const w=(b.w||66)/100*W;box.style.width=w+'px';box.style.height=(w*1138/880)+'px';const at=b.at||[50,52];box.style.left=(at[0]/100*W)+'px';box.style.top=(at[1]/100*H)+'px';
   const inner=el('div','in',box);const fr=el('iframe','',inner,null,'border:0;width:1080px;height:1920px;position:absolute;left:0;top:0;transform-origin:0 0;pointer-events:none');fr.src='index.html';
-  return {e:box,inner,fr,w};},
+  const nt=el('div','abs',L,'Sample data shown',`left:${at[0]/100*W}px;top:${at[1]/100*H+(w*1138/880)/2+18}px;transform:translateX(-50%);font-weight:700;font-size:24px;color:${C.muted};white-space:nowrap`);
+  return {e:box,inner,fr,w,nt};},
  async prep(o,b){await new Promise(r=>{if(o.fr.contentWindow&&o.fr.contentWindow.init)r();else o.fr.onload=r;});const cw=o.fr.contentWindow;const scene=Object.assign({type:'app',caption:[' ',' ']},b);delete scene.at;delete scene.w;delete scene.in;delete scene.id;delete scene.until;delete scene.kind;
   const meta=await cw.init({scenes:[scene]});o.cw=cw;o.meta=meta;const sc=meta.timeline[0].screens[0];o.t0=sc.start;o.dur=sc.dur;o.cues=meta.cues.filter(c=>c.t>=sc.start-.1).map(c=>({t:c.t-sc.start,type:c.type}));
   // crop to the app window of the v1 layout (left 100, top 400, 880 x 1138)
   const s=o.w/880;o.fr.style.transform=`scale(${s}) translate(-100px,-400px)`;const d=cw.document;const st=d.createElement('style');st.textContent='.cap,.note,.dsub{display:none!important}.win{box-shadow:none!important;border-radius:0!important}';d.head.appendChild(st);},
  cues(b,t0,o){(o&&o.cues||[]).forEach(c=>cue(t0+c.t,c.type));},
- update(o,b,lt){if(o.cw)o.cw.setTime(o.t0+Math.min(lt,o.dur-.05));const a=animIn(b.in||'rise',seg(lt,0,.5));o.e.style.transform=`translate(-50%,-50%) translate(${a.x}px,${a.y}px) scale(${a.s})`;o.e.style.opacity=a.o;return null;}};
+ update(o,b,lt){if(o.cw)o.cw.setTime(o.t0+Math.min(lt,o.dur-.05));const a=animIn(b.in||'rise',seg(lt,0,.5));o.nt.style.opacity=a.o;o.e.style.transform=`translate(-50%,-50%) translate(${a.x}px,${a.y}px) scale(${a.s})`;o.e.style.opacity=a.o;return null;}};
 
 /* ===================== scenes, captions, timeline ===================== */
 let SC=[],TOTAL=0,VOICE=null,CAPS=[],LOOP=false;const TR=.42;

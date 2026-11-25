@@ -28,6 +28,7 @@ jobs:
       PAGE_ID: ${{ github.event.client_payload.page_id || 'manual-test' }}
       CALLBACK: ${{ github.event.client_payload.callback }}
       SPEC_JSON: ${{ toJSON(github.event.client_payload.spec) }}
+      CAPTION: ${{ github.event.client_payload.caption }}
       EXAMPLE: ${{ github.event.inputs.example }}
       RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
     steps:
@@ -164,7 +165,9 @@ jobs:
               # extra versions from the blocks engine: 4:5 / 1:1 crops, extra hooks, the short cut
               body['extra_urls'] = ' '.join(f"{base}/{dest}/{f}" for f in (rep.get('files') or []) if f != 'video.mp4')
               body['notes'] = ' | '.join(rep.get('notes') or [])[:600]
-              body['music_credit'] = rep.get('music_credit', '')  # add this line to the end of the caption
+              body['music_credit'] = rep.get('music_credit', '')
+              cap = (os.environ.get('CAPTION') or '').strip()
+              if cap: body['caption'] = cap + ('\n\n' + body['music_credit'] if body['music_credit'] else '')
           print(json.dumps(body, indent=2))
           if cb:
               req = urllib.request.Request(cb, data=json.dumps(body).encode(), headers={'Content-Type': 'application/json'})

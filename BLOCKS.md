@@ -23,6 +23,8 @@ for a quick contact sheet, `python render.py storyboard.json out` for the full v
   Voices: narrator `jenny` (default), `alba`, `alan`, `northern`, `cori`; each character has its own voice.
   Captions are burned in automatically. Set `"story": true` on a line that is a character talking in the story
   (not a claim about Gwithva). Scenes stretch automatically if a line is longer than the scene.
+  Optional `"speed"` per line (0.8 to 1.2): slower for tired or stressed, faster for excited. Voices are Kokoro
+  (British): narrator `kokoro:bf_emma`; characters each have their own. Write Gwithva normally; it is said Gwith-vah.
 
 ## Scene
 

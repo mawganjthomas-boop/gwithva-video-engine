@@ -32,7 +32,7 @@ PHONEMES = {r'\bgwithva\.app\b': '[Gwithva](/ɡwˈɪðvɑː/) dot app', r'\bgwit
 _KP = {}
 
 
-def synth_kokoro(text, voice, path):
+def synth_kokoro(text, voice, path, speed=1.0):
     try:
         from kokoro import KPipeline
     except Exception:
@@ -41,7 +41,7 @@ def synth_kokoro(text, voice, path):
         for pat, rep in PHONEMES.items(): text = re.sub(pat, rep, text, flags=re.I)
     for pat, rep in list(PRONOUNCE.items())[3:]: text = re.sub(pat, rep, text, flags=re.I)  # Airbnb, DBS, 10pm
     if 'b' not in _KP: _KP['b'] = KPipeline(lang_code='b')
-    parts = [r.audio.numpy() if hasattr(r.audio, 'numpy') else np.asarray(r.audio) for r in _KP['b'](text, voice=voice, speed=1.0) if r.audio is not None]
+    parts = [r.audio.numpy() if hasattr(r.audio, 'numpy') else np.asarray(r.audio) for r in _KP['b'](text, voice=voice, speed=speed) if r.audio is not None]
     if not parts: return None
     x = np.concatenate(parts).astype(np.float32)
     x = np.interp(np.linspace(0, len(x) - 1, int(len(x) * SR / 24000)), np.arange(len(x)), x).astype(np.float32)
@@ -94,10 +94,10 @@ def fetch_media(spec, work):
     return probs
 
 
-def synth(text, voice, path):
+def synth(text, voice, path, speed=1.0):
     """Piper TTS to a wav file. Returns (samples at SR mono float32, duration) or None if Piper isn't available."""
     if voice.startswith('kokoro:'):
-        r = synth_kokoro(text, voice.split(':', 1)[1], path)
+        r = synth_kokoro(text, voice.split(':', 1)[1], path, speed)
         if r is not None: return r
         voice = PIPER_FALLBACK.get(voice, 'cori')
     base, _, spk = voice.partition(':')
@@ -147,7 +147,7 @@ def build_voice(spec, work, probs):
     for k, ln in enumerate(lines):
         sp = ln.get('speaker', 'narrator')
         voice = ln.get('voice') or (CAST_VOICE.get(speakers.get(sp), 'kokoro:bf_isabella') if sp != 'narrator' else narrator)
-        r = synth(ln['text'], voice, os.path.join(work, f'line{k}.wav'))
+        r = synth(ln['text'], voice, os.path.join(work, f'line{k}.wav'), max(.8, min(1.2, float(ln.get('speed') or 1.0))))
         if r is None:  # no voice models here (e.g. a local test): timed placeholder so captions and lip-sync still work
             real = False; dur = max(.8, len(ln['text'].split()) * .36)
             tt = np.arange(int(dur * SR)) / SR; x = (np.sin(2 * np.pi * 3.2 * tt) ** 2 * .3).astype(np.float32)
