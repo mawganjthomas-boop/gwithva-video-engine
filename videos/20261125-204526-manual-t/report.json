@@ -1,0 +1,44 @@
+{
+  "ok": true,
+  "engine": "blocks",
+  "problems": [],
+  "notes": [],
+  "total": 13.16,
+  "timeline": [
+    {
+      "type": "hook",
+      "start": 0,
+      "dur": 2.4
+    },
+    {
+      "type": "scene",
+      "start": 2.4,
+      "dur": 2.49
+    },
+    {
+      "type": "scene",
+      "start": 4.89,
+      "dur": 2.44
+    },
+    {
+      "type": "scene",
+      "start": 7.33,
+      "dur": 2.4
+    },
+    {
+      "type": "cta",
+      "start": 9.73,
+      "dur": 3.38
+    }
+  ],
+  "music": {
+    "track": "warm-welcome",
+    "title": "Warm Welcome Podcast Theme",
+    "credit": "Music: \"Warm Welcome Podcast Theme\" by BudgetPixel AI (https://budgetpixel.com/background-music/warm-welcome-podcast-theme-98682ba9), CC BY 4.0"
+  },
+  "music_credit": "Music: \"Warm Welcome Podcast Theme\" by BudgetPixel AI (https://budgetpixel.com/background-music/warm-welcome-podcast-theme-98682ba9), CC BY 4.0",
+  "files": [
+    "video.mp4"
+  ],
+  "bytes": 6727998
+}
