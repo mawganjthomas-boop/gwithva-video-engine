@@ -93,7 +93,7 @@ jobs:
 
       - name: Render
         id: render
-        run: python render.py spec.json out || true
+        run: python render.py spec.json out 2>&1 | tee /tmp/render.log || true
 
       - name: Publish files
         id: pub
@@ -143,11 +143,12 @@ jobs:
           git add -A videos && git commit -qm "Video for $PAGE_ID" && git pull -q --rebase && git push -q
 
       - name: If publishing failed, post the log as an issue (so it can be read without signing in)
-        if: steps.pub.outcome == 'failure'
+        if: steps.pub.outcome == 'failure' || hashFiles('out/report.json') == ''
         run: |
           python - <<'EOF'
           import json, os, urllib.request
-          log = open('/tmp/pub.log').read()[-6000:] if os.path.exists('/tmp/pub.log') else 'no log'
+          log = open('/tmp/pub.log').read()[-3000:] if os.path.exists('/tmp/pub.log') else 'no log'
+          log += '\n--- render log ---\n' + (open('/tmp/render.log').read()[-4000:] if os.path.exists('/tmp/render.log') else 'no render log')
           body = json.dumps({'title': 'Publish failed for ' + os.environ.get('PAGE_ID', ''), 'body': '```\n' + log + '\n```'}).encode()
           req = urllib.request.Request(f"https://api.github.com/repos/{os.environ['GITHUB_REPOSITORY']}/issues", data=body, method='POST',
                                        headers={'Authorization': 'Bearer ' + os.environ['GH_TOKEN'], 'Accept': 'application/vnd.github+json'})

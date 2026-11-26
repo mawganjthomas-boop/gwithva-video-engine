@@ -67,4 +67,14 @@ def main(spec_path, out):
 
 
 if __name__ == '__main__':
-    sys.exit(main(sys.argv[1], sys.argv[2]))
+    try:
+        sys.exit(main(sys.argv[1], sys.argv[2]))
+    except SystemExit:
+        raise
+    except Exception as e:  # never leave Make without an answer: write the crash into the report
+        import traceback
+        tb = traceback.format_exc()
+        print(tb)
+        os.makedirs(sys.argv[2], exist_ok=True)
+        json.dump({'ok': False, 'problems': [f'The engine crashed: {type(e).__name__}: {e}', tb[-1500:]]}, open(f'{sys.argv[2]}/report.json', 'w'), indent=2)
+        sys.exit(4)
