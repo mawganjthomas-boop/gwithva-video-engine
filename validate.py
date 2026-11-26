@@ -25,6 +25,9 @@ BANNED_CLAIMS = [
     (r'\brevolution|\bgame[- ]chang|\bseamless\b|\bgroundbreaking\b', 'hype words'),
     (r'\bsocial (platform|network)\b', 'social platform'),
 ]
+# "free" is only a problem when it is about money (free bookings, free trial, totally free...).
+# Diary talk ("Friday morning is free", "free days") is fine.
+FREE_BAD = re.compile(r'\b(100%|totally|completely|always|forever|absolutely|100 percent) free\b|\bfree (bookings?|leads?|jobs?|customers?|clients?|money|cash|trial|forever|for life|for customers|for clients|of charge|commission|fees?|plan|month|work|to use|to book)\b|\bfree for (everyone|customers|clients|life|ever)\b|\bfor free\b', re.I)
 FREE_OK = re.compile(r'\bfree (to sign up|to download|cleaner account|account|slots?|app|on the app store|on google play|days?|dates?|time|times|hours?|evenings?|mornings?|afternoons?|weekends?|week|gaps?|spaces?|spots?)\b|\b(any|got|have|has|a|your) free\b|\bsign up (for )?free\b|\b(download|get) (gwithva |the app |it )?free\b', re.I)
 
 LIMITS = {  # max characters
@@ -40,7 +43,7 @@ def _claims(text, where, errs, pound_ok=False):
     if pound_ok: t = t.replace('£', '')
     for pat, why in BANNED_CLAIMS:
         if re.search(pat, t, re.I): errs.append(f'{where}: "{t}" breaks the Fact Sheet ({why})')
-    if re.search(r'\bfree\b', t, re.I) and not FREE_OK.search(t):
+    if FREE_BAD.search(t) and not FREE_OK.search(t):
         errs.append(f'{where}: "{t}" uses "free" outside "free to sign up"/"free cleaner account"')
 
 
