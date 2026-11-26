@@ -15,6 +15,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 concurrency:
   group: render
@@ -96,7 +97,10 @@ jobs:
 
       - name: Publish files
         id: pub
+        continue-on-error: true
         run: |
+          exec > >(tee /tmp/pub.log) 2>&1
+          set -x
           python - <<'EOF'
           import json, os, shutil, time
           rep = json.load(open('out/report.json'))
@@ -137,6 +141,20 @@ jobs:
           mkdir -p $DEST
           if [ -f .pages-from-media ]; then cp pub/$DEST/storyboard.json pub/$DEST/report.json $DEST/; else cp pub/$DEST/* $DEST/; fi
           git add -A videos && git commit -qm "Video for $PAGE_ID" && git pull -q --rebase && git push -q
+
+      - name: If publishing failed, post the log as an issue (so it can be read without signing in)
+        if: steps.pub.outcome == 'failure'
+        run: |
+          python - <<'EOF'
+          import json, os, urllib.request
+          log = open('/tmp/pub.log').read()[-6000:] if os.path.exists('/tmp/pub.log') else 'no log'
+          body = json.dumps({'title': 'Publish failed for ' + os.environ.get('PAGE_ID', ''), 'body': '```\n' + log + '\n```'}).encode()
+          req = urllib.request.Request(f"https://api.github.com/repos/{os.environ['GITHUB_REPOSITORY']}/issues", data=body, method='POST',
+                                       headers={'Authorization': 'Bearer ' + os.environ['GH_TOKEN'], 'Accept': 'application/vnd.github+json'})
+          print(urllib.request.urlopen(req).status)
+          EOF
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Wait until the video is live
         if: steps.pub.outputs.ok == 'true'
