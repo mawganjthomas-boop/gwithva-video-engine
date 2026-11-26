@@ -200,6 +200,7 @@ def _block_texts(b):
     return []
 
 
+APP_SCREENS = {'bookings', 'diary', 'messages', 'share', 'expenses', 'overview', 'invoice', 'export', 'jobs'}
 BUBBLE_ALIASES = {'think': 'think', 'thought': 'think', 'speech': 'speech', 'say': 'speech', 'talk': 'speech', 'message': 'text', 'sms': 'text'}
 
 
@@ -217,6 +218,12 @@ def normalise_blocks(spec):
                 b['kind'] = 'bubble'
                 b.setdefault('style', BUBBLE_ALIASES[k])
                 notes.append(f'scene {i if isinstance(i, str) else i + 1}: block kind "{k}" changed to a {BUBBLE_ALIASES[k]} bubble')
+            elif k == 'image' and str(b.get('src', '')).startswith('screen:') and str(b.get('src'))[7:] in APP_SCREENS and b.get('frame', 'phone') == 'phone':
+                # a live, animated app screen with sample data looks far better than a static screenshot
+                scr = str(b['src'])[7:]
+                for key in ('src', 'frame', 'zoom', 'clip'): b.pop(key, None)
+                b['kind'] = 'app'; b['screen'] = scr
+                notes.append(f'scene {i if isinstance(i, str) else i + 1}: screenshot of {scr} swapped for the live app screen')
             elif k == 'logo' and any(x.get('kind') == 'cta' for x in s.get('blocks') or []):
                 notes.append(f'scene {i if isinstance(i, str) else i + 1}: logo dropped (the end card already shows it)'); continue
             elif k not in BLOCK_KINDS:

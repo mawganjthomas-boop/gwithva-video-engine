@@ -352,6 +352,8 @@ async function init(spec,voice){const stage=document.getElementById('stage');sta
  for(let i=0;i<scenes.length;i++){const s=scenes[i];const L=el('div','scene',stage);L.style.zIndex=i+1;const cam=el('div','cam',L);
   const bg=s.bg||'cream';if(ROOMS[bg]){svg(cam,'0 0 1080 1920',ROOMS[bg],'abs','left:0;top:0;width:1080px;height:1920px');cam.dataset.room=bg;}else{cam.style.background=PLAIN[bg]||col(bg);}
   if(['teal','night','terra'].includes(bg)||ROOMS[bg]==ROOMS.night)setTimeout(()=>{cam.querySelectorAll('.cta-wm').forEach(n=>n.style.color=C.cream);cam.querySelectorAll('.cta-sub').forEach(n=>n.style.color=C.peach);},0);
+  const darkBg=['teal','night','terra','app','ink'].includes(bg)||ROOMS[bg]==ROOMS.night||/^#(0|1|2)/.test(bg);
+  if(darkBg&&!ROOMS[bg])(s.blocks||[]).forEach(b=>{if((b.kind||'text')==='text'&&!b.plate&&(!b.color||['teal','ink','app','night'].includes(b.color)||/^#(0|1)/.test(b.color))){b.color='cream';if(!b.accent||b.accent==='terra'||b.accent==='teal')b.accent='peach';PROBLEMS_NOTE.push(`Scene ${i+1}: dark text on a dark background turned cream so it can be read`);}});
   const tr=i===0?'cut':(s.transition||'slide');const start=i===0?0:(tr==='cut'?t:t-TR);
   const hasCta=(s.blocks||[]).some(b=>b.kind==='cta');if(hasCta&&(s.blocks||[]).some(b=>b.kind==='logo'))PROBLEMS_NOTE.push(`Scene ${i+1}: removed the extra logo (the end card has one)`);
   const blocks=(s.blocks||[]).filter(b=>!(hasCta&&b.kind==='logo')).map((b,k)=>{const kind=b.kind||'text';if(!B[kind]){PROBLEMS.push(`Scene ${i+1}: unknown block "${kind}"`);return null;}

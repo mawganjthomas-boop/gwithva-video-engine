@@ -16,7 +16,7 @@ Pick the ONE play from PROVEN PLAYS that gives the strongest video clearly diffe
 CRAFT (always)
 - Something moves in the first half-second, and the problem is clear within 3 seconds.
 - It must work with the sound off: captions come from the voiceover, on-screen text is short.
-- Show the real app at least once (an app block), paired with the benefit it proves.
+- Show the real app at least once with an app block (it animates the real screen with sample data), paired with the benefit it proves. Use app blocks, not image blocks with src screen:NAME, for the app screens.
 - Use a different structure, bg and first scene from each of the last 3 RECENT VIDEOS.
 - Cartoon ads: use the Gwithva cast (cleaners kerra, jago, amira, dev; customers tamsin, ollie, grace) in a short story: problem, moment of realisation, the app, the relief. Give characters a few spoken lines (speaker = their block id); a narrator can carry the rest. Characters' talk that is part of the story, not a claim about Gwithva, gets "story": true.
 - Photos and clips: use only PHOTO LIBRARY items marked approved true (their src URL; app screenshots use src screen:NAME). Never invent people or photos. Anything showing a recognisable person also needs permission true.
