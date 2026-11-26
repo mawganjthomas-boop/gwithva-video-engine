@@ -104,7 +104,9 @@ jobs:
           dest = f"videos/{time.strftime('%Y%m%d-%H%M%S')}-{os.environ['PAGE_ID'][:8]}"
           if ok:
               os.makedirs(f'pub/{dest}', exist_ok=True)
-              for f in set(['video.mp4', 'cover.jpg', 'sheet.jpg', 'report.json'] + (rep.get('files') or [])): shutil.copy(f'out/{f}', f'pub/{dest}/{f}')
+              for f in set(['video.mp4', 'cover.jpg', 'sheet.jpg', 'report.json'] + (rep.get('files') or [])):
+                  if os.path.exists(f'out/{f}'): shutil.copy(f'out/{f}', f'pub/{dest}/{f}')
+                  else: print('missing, skipped:', f)
               shutil.copy('spec.json', f'pub/{dest}/storyboard.json')
           with open(os.environ['GITHUB_OUTPUT'], 'a') as g:
               g.write(f"ok={'true' if ok else 'false'}\ndest={dest}\n")

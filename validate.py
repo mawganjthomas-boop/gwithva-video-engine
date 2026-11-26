@@ -206,18 +206,21 @@ BUBBLE_ALIASES = {'think': 'think', 'thought': 'think', 'speech': 'speech', 'say
 def normalise_blocks(spec):
     """Fix small agent slips instead of failing the whole video. Returns notes."""
     notes = []
-    for i, s in enumerate(spec.get('scenes') or []):
+    allsc = list(enumerate(spec.get('scenes') or [])) + [(f'hook {j + 2} ', h) for j, h in enumerate(spec.get('hooks') or []) if isinstance(h, dict)]
+    for i, s in allsc:
+        i = i if isinstance(i, str) else i  # label
+
         keep = []
         for b in s.get('blocks') or []:
             k = b.get('kind', 'text')
             if k in BUBBLE_ALIASES:
                 b['kind'] = 'bubble'
                 b.setdefault('style', BUBBLE_ALIASES[k])
-                notes.append(f'scene {i + 1}: block kind "{k}" changed to a {BUBBLE_ALIASES[k]} bubble')
+                notes.append(f'scene {i if isinstance(i, str) else i + 1}: block kind "{k}" changed to a {BUBBLE_ALIASES[k]} bubble')
             elif k == 'logo' and any(x.get('kind') == 'cta' for x in s.get('blocks') or []):
-                notes.append(f'scene {i + 1}: logo dropped (the end card already shows it)'); continue
+                notes.append(f'scene {i if isinstance(i, str) else i + 1}: logo dropped (the end card already shows it)'); continue
             elif k not in BLOCK_KINDS:
-                notes.append(f'scene {i + 1}: unknown block kind "{k}" left out'); continue
+                notes.append(f'scene {i if isinstance(i, str) else i + 1}: unknown block kind "{k}" left out'); continue
             keep.append(b)
         s['blocks'] = keep
     return notes
