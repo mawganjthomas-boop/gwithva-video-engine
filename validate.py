@@ -197,6 +197,29 @@ def _block_texts(b):
     return []
 
 
+BUBBLE_ALIASES = {'think': 'think', 'thought': 'think', 'speech': 'speech', 'say': 'speech', 'talk': 'speech', 'message': 'text', 'sms': 'text'}
+
+
+def normalise_blocks(spec):
+    """Fix small agent slips instead of failing the whole video. Returns notes."""
+    notes = []
+    for i, s in enumerate(spec.get('scenes') or []):
+        keep = []
+        for b in s.get('blocks') or []:
+            k = b.get('kind', 'text')
+            if k in BUBBLE_ALIASES:
+                b['kind'] = 'bubble'
+                b.setdefault('style', BUBBLE_ALIASES[k])
+                notes.append(f'scene {i + 1}: block kind "{k}" changed to a {BUBBLE_ALIASES[k]} bubble')
+            elif k == 'logo' and any(x.get('kind') == 'cta' for x in s.get('blocks') or []):
+                notes.append(f'scene {i + 1}: logo dropped (the end card already shows it)'); continue
+            elif k not in BLOCK_KINDS:
+                notes.append(f'scene {i + 1}: unknown block kind "{k}" left out'); continue
+            keep.append(b)
+        s['blocks'] = keep
+    return notes
+
+
 def validate_blocks(spec):
     errs = []
     sc = spec.get('scenes') or []

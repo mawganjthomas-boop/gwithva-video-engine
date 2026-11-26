@@ -8,7 +8,7 @@ characters' mouths move with the voice, and captions are burned in. Music is duc
 import json, os, re, shutil, subprocess, sys, pathlib, urllib.request, wave, hashlib
 import numpy as np
 from playwright.sync_api import sync_playwright
-from validate import validate_blocks
+from validate import validate_blocks, normalise_blocks
 from audio import render_audio, SR
 
 HERE = pathlib.Path(__file__).resolve().parent
@@ -249,6 +249,7 @@ def crops(out, name, formats):
 def main_blocks(spec, out):
     os.makedirs(out, exist_ok=True)
     report = {'ok': False, 'engine': 'blocks', 'problems': [], 'notes': []}
+    report['notes'] += normalise_blocks(spec)
     errs = validate_blocks(spec)
     if errs:
         report['problems'] = errs; json.dump(report, open(f'{out}/report.json', 'w'), indent=2); print('\n'.join(errs)); return 2

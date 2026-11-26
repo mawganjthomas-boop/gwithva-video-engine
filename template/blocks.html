@@ -270,7 +270,7 @@ B.character={build(L,b){const size=(b.size||40)/100*H;const e=el('div','blk',L);
 B.prop={build(L,b){const e=el('div','blk',L);const s=(b.size||16)/100*W;propSvg(e,b.name,s);place(e,b);return {e};},
  cues(b,t0){cue(t0,b.name==='sparkle'||b.name==='star'?'sparkle':'pop');},
  update(o,b,lt){const a=animIn(b.in||'pop',seg(lt,0,.45));const f=loopFx(b.loop||'',lt);return {o:a.o,s:a.s*f.s,x:a.x,y:a.y+f.y,r:a.r+f.r};}};
-B.bubble={build(L,b){const e=el('div','bub '+(b.kind||'speech'),L);place(e,b);e.style.maxWidth=((b.w||62)/100*W)+'px';e.style.width='auto';e.innerHTML=accent(b.text,col('terra'));
+B.bubble={build(L,b){const bk=b.style||b.bubble_kind||(b.kind!=='bubble'?b.kind:'')||'speech';const e=el('div','bub '+bk,L);place(e,b);e.style.maxWidth=((b.w||62)/100*W)+'px';e.style.width='auto';e.innerHTML=accent(b.text,col('terra'));
   const tail=b.tail||'down-l';const tl=el('div','abs',e);const bg=b.kind==='text'?C.app:'#fff',bd=b.kind==='text'?C.app:C.teal;
   const pos={'down-l':'left:70px;bottom:-46px','down-r':'right:70px;bottom:-46px','left':'left:-46px;top:40%','right':'right:-46px;top:40%'}[tail]||'left:70px;bottom:-46px';
   tl.setAttribute('style',pos+';width:60px;height:60px');tl.innerHTML=`<svg viewBox="0 0 60 60" style="overflow:visible"><path d="${tail.startsWith('down')?'M5 0 L20 55 L45 0':tail==='left'?'M60 5 L5 20 L60 45':'M0 5 L55 20 L0 45'}" fill="${bg}" stroke="${bd}" stroke-width="7" stroke-linejoin="round"/></svg>`;

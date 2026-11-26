@@ -43,7 +43,7 @@ for a quick contact sheet, `python render.py storyboard.json out` for the full v
 | `text` | `text` (`\n` for lines, `*word*` = accent colour), `style` `headline`/`big`/`body`/`kicker`/`label`/`number`, `color`, `accent`, `size`, `w`, `in`, `plate` | `in`: `words` (default), `pop`, `rise`, `slam`, `type`, `fade`, `slide-l`, `slide-r`, `drop`, `spin` |
 | `character` | `who`, `id`, `pose`, `mood`, `holds`, `size` (% of height, default 40), `flip`, `move` `[{"to": [x, y], "at": 0.5, "dur": 1}]`, `changes` `[{"at": 1.2, "pose": "cheer", "mood": "proud"}]` | cast: cleaners `kerra`, `jago`, `amira`, `dev`; customers `tamsin`, `ollie`, `grace` |
 | `prop` | `name`, `size` (% of width), `loop` `bob`/`shake`/`pulse`/`spin`/`float` | phone, bucket, spray, mop, keys, diary, calendar, clock, coffee, laptop, envelope, bell, papers, tick, cross, house, heart, star, sparkle, question, exclaim, lightbulb, sweat, zzz |
-| `bubble` | `text`, `kind` `speech`/`think`/`text` (a phone message), `tail` `down-l`/`down-r`/`left`/`right`, `w` | |
+| `bubble` | `text`, `style` `speech`/`think`/`text` (a phone message; never put these in `kind`, which must be `bubble`), `tail` `down-l`/`down-r`/`left`/`right`, `w` | |
 | `notifs` | `items` `[{"kind": "msg/call/bell/cal/note/email", "title", "body"}]`, `gap`, `w` | stacks phone notifications |
 | `checklist` | `items` (max 28 characters each), `gap` | ticks each item |
 | `counter` | `from`, `to`, `prefix`, `suffix`, `dur` | big number counting |
