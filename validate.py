@@ -25,7 +25,7 @@ BANNED_CLAIMS = [
     (r'\brevolution|\bgame[- ]chang|\bseamless\b|\bgroundbreaking\b', 'hype words'),
     (r'\bsocial (platform|network)\b', 'social platform'),
 ]
-FREE_OK = re.compile(r'\bfree (to sign up|to download|cleaner account|account|slots?|app|on the app store|on google play)\b|\bsign up (for )?free\b|\b(download|get) (gwithva |the app |it )?free\b', re.I)
+FREE_OK = re.compile(r'\bfree (to sign up|to download|cleaner account|account|slots?|app|on the app store|on google play|days?|dates?|time|times|hours?|evenings?|mornings?|afternoons?|weekends?|week|gaps?|spaces?|spots?)\b|\b(any|got|have|has|a|your) free\b|\bsign up (for )?free\b|\b(download|get) (gwithva |the app |it )?free\b', re.I)
 
 LIMITS = {  # max characters
     'hook.line': 26, 'hook.punch': 22, 'pileup.keyword': 20, 'pileup.block': 16, 'notif.title': 18, 'notif.body': 46,
