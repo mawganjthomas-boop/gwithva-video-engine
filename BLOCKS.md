@@ -47,9 +47,9 @@ for a quick contact sheet, `python render.py storyboard.json out` for the full v
 | `notifs` | `items` `[{"kind": "msg/call/bell/cal/note/email", "title", "body"}]`, `gap`, `w` | stacks phone notifications |
 | `checklist` | `items` (max 28 characters each), `gap` | ticks each item |
 | `counter` | `from`, `to`, `prefix`, `suffix`, `dur` | big number counting |
-| `app` | `screen` (bookings, diary, messages, share, expenses, overview, invoice, export, jobs) + that screen's sample data (same fields as the v1 engine), `w` | the real app, animated, in a phone frame |
-| `image` | `src` (`screen:bookings`, or a photo/clip URL from the Photo library), `frame` `phone`/`card`/`circle`/`full`, `zoom` `{"at", "dur", "from": [x, y, scale], "to": [x, y, scale]}`, `clip` `{"start": 2}` | zoom into the part that matters |
-| `logo` | `size`, `color` | draws the house-and-arrow mark and the wordmark |
+| `app` | `screen` (bookings, diary, messages, share, expenses, overview, invoice, export, jobs) + that screen's sample data (same fields as the v1 engine; always fill it in, or the engine uses its own sample), `w` | the real app, animated, in a phone frame |
+| `image` | `src` (`screen:bookings`, or a photo/clip URL from the Photo library), `frame` `phone`/`card`/`circle`/`full`, `zoom` `{"at", "dur", "from": [x, y, scale], "to": [x, y, scale]}` (x and y are 0 to 1, not percent), `clip` `{"start": 2}` | zoom into the part that matters |
+| `logo` | `size`, `color` | draws the house-and-arrow mark and the wordmark. Never in the same scene as `cta` (the end card already has the logo; the engine drops it). Use at most once per video, outside the end card |
 | `cta` | `button`, `sub`, `y` | the end card; must be in the last scene |
 | `arrow` | `from`, `to`, `color` | hand-drawn arrow |
 | `circle` | `at`, `w`, `h` | hand-drawn ring to highlight something |
