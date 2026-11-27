@@ -74,7 +74,7 @@ def fetch_media(spec, work):
             src = b.get('src') or ''
             if not src or src.startswith('screen:'): continue
             ext = (re.search(r'\.(jpe?g|png|webp|mp4|mov|m4v|webm)(\?|$)', src, re.I) or [None, 'jpg'])[1].lower()
-            local = os.path.join(work, hashlib.md5(src.encode()).hexdigest()[:10] + '.' + ext)
+            local = os.path.abspath(os.path.join(work, hashlib.md5(src.encode()).hexdigest()[:10] + '.' + ext))
             try:
                 if src.startswith('http'):
                     if not os.path.exists(local):
@@ -88,9 +88,9 @@ def fetch_media(spec, work):
                 ss = float((b.get('clip') or {}).get('start') or 0); du = float(s.get('dur') or 3) + 1
                 subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-ss', str(ss), '-t', str(du), '-i', local, '-vf',
                                 f'fps={FPS},scale=1080:-2', '-q:v', '3', f'{d}/f_%04d.jpg'], check=True)
-                b['frames'] = {'dir': pathlib.Path(d).as_uri(), 'n': len(os.listdir(d))}
+                b['frames'] = {'dir': pathlib.Path(d).resolve().as_uri(), 'n': len(os.listdir(d))}
             else:
-                b['src'] = pathlib.Path(local).as_uri()
+                b['src'] = pathlib.Path(local).resolve().as_uri()
     return probs
 
 
