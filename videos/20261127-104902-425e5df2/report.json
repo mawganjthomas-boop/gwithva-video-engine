@@ -1,0 +1,61 @@
+{
+  "ok": true,
+  "engine": "blocks",
+  "problems": [],
+  "notes": [],
+  "total": 28.73,
+  "timeline": [
+    {
+      "type": "hook",
+      "start": 0,
+      "dur": 7.38
+    },
+    {
+      "type": "scene",
+      "start": 6.96,
+      "dur": 3.53
+    },
+    {
+      "type": "scene",
+      "start": 10.07,
+      "dur": 4.47
+    },
+    {
+      "type": "scene",
+      "start": 14.12,
+      "dur": 4.45
+    },
+    {
+      "type": "scene",
+      "start": 18.15,
+      "dur": 3.5
+    },
+    {
+      "type": "scene",
+      "start": 21.23,
+      "dur": 3.17
+    },
+    {
+      "type": "cta",
+      "start": 23.98,
+      "dur": 4.7
+    }
+  ],
+  "music": {
+    "track": "cafe-bossa",
+    "title": "Sunlit Caf\u00e9 Bossa",
+    "credit": "Music: \"Sunlit Caf\u00e9 Bossa\" by BudgetPixel AI (https://budgetpixel.com/background-music/sunlit-caf-bossa-ffd8148f), CC BY 4.0"
+  },
+  "music_credit": "Music: \"Sunlit Caf\u00e9 Bossa\" by BudgetPixel AI (https://budgetpixel.com/background-music/sunlit-caf-bossa-ffd8148f), CC BY 4.0",
+  "files": [
+    "video.mp4",
+    "video_4x5.mp4",
+    "video_hook2.mp4",
+    "video_hook2_4x5.mp4",
+    "video_hook3.mp4",
+    "video_hook3_4x5.mp4",
+    "video_short.mp4",
+    "video_short_4x5.mp4"
+  ],
+  "bytes": 14189261
+}
