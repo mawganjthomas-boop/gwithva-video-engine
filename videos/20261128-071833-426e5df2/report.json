@@ -1,0 +1,61 @@
+{
+  "ok": true,
+  "engine": "blocks",
+  "problems": [],
+  "notes": [],
+  "total": 25.33,
+  "timeline": [
+    {
+      "type": "hook",
+      "start": 0,
+      "dur": 4.08
+    },
+    {
+      "type": "scene",
+      "start": 3.66,
+      "dur": 4.42
+    },
+    {
+      "type": "scene",
+      "start": 8.08,
+      "dur": 3.03
+    },
+    {
+      "type": "scene",
+      "start": 10.69,
+      "dur": 4.75
+    },
+    {
+      "type": "scene",
+      "start": 15.02,
+      "dur": 3.5
+    },
+    {
+      "type": "scene",
+      "start": 18.1,
+      "dur": 3
+    },
+    {
+      "type": "cta",
+      "start": 20.68,
+      "dur": 4.6
+    }
+  ],
+  "music": {
+    "track": "sunday-rhodes",
+    "title": "Lazy Sunday Rhodes",
+    "credit": "Music: \"Lazy Sunday Rhodes\" by BudgetPixel AI (https://budgetpixel.com/background-music/lazy-sunday-rhodes-14f2a914), CC BY 4.0"
+  },
+  "music_credit": "Music: \"Lazy Sunday Rhodes\" by BudgetPixel AI (https://budgetpixel.com/background-music/lazy-sunday-rhodes-14f2a914), CC BY 4.0",
+  "files": [
+    "video.mp4",
+    "video_4x5.mp4",
+    "video_hook2.mp4",
+    "video_hook2_4x5.mp4",
+    "video_hook3.mp4",
+    "video_hook3_4x5.mp4",
+    "video_short.mp4",
+    "video_short_4x5.mp4"
+  ],
+  "bytes": 13512186
+}
