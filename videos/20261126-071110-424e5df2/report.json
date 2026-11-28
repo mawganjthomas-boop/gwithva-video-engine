@@ -1,0 +1,61 @@
+{
+  "ok": true,
+  "engine": "blocks",
+  "problems": [],
+  "notes": [],
+  "total": 31.91,
+  "timeline": [
+    {
+      "type": "hook",
+      "start": 0,
+      "dur": 5.33
+    },
+    {
+      "type": "scene",
+      "start": 4.91,
+      "dur": 4.2
+    },
+    {
+      "type": "scene",
+      "start": 8.69,
+      "dur": 5.83
+    },
+    {
+      "type": "scene",
+      "start": 14.1,
+      "dur": 4.5
+    },
+    {
+      "type": "scene",
+      "start": 18.18,
+      "dur": 5.62
+    },
+    {
+      "type": "scene",
+      "start": 23.38,
+      "dur": 4.4
+    },
+    {
+      "type": "cta",
+      "start": 27.36,
+      "dur": 4.5
+    }
+  ],
+  "music": {
+    "track": "beach-day-pop",
+    "title": "Beach Day Summer Pop Anthem",
+    "credit": "Music: \"Beach Day Summer Pop Anthem\" by BudgetPixel AI (https://budgetpixel.com/background-music/beach-day-summer-pop-anthem-f00258e9), CC BY 4.0"
+  },
+  "music_credit": "Music: \"Beach Day Summer Pop Anthem\" by BudgetPixel AI (https://budgetpixel.com/background-music/beach-day-summer-pop-anthem-f00258e9), CC BY 4.0",
+  "files": [
+    "video.mp4",
+    "video_4x5.mp4",
+    "video_hook2.mp4",
+    "video_hook2_4x5.mp4",
+    "video_hook3.mp4",
+    "video_hook3_4x5.mp4",
+    "video_short.mp4",
+    "video_short_4x5.mp4"
+  ],
+  "bytes": 17392953
+}

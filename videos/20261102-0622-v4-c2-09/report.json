@@ -1,0 +1,66 @@
+{
+  "ok": true,
+  "problems": [],
+  "total": 32,
+  "timeline": [
+    {
+      "type": "hook",
+      "start": 0,
+      "dur": 3.45,
+      "screens": null
+    },
+    {
+      "type": "qa",
+      "start": 3,
+      "dur": 7.3,
+      "screens": null
+    },
+    {
+      "type": "qa",
+      "start": 9.85,
+      "dur": 7.3,
+      "screens": null
+    },
+    {
+      "type": "qa",
+      "start": 16.7,
+      "dur": 3.9,
+      "screens": null
+    },
+    {
+      "type": "reveal",
+      "start": 20.15,
+      "dur": 2.6,
+      "screens": null
+    },
+    {
+      "type": "appgroup",
+      "start": 22.3,
+      "dur": 6.85,
+      "screens": [
+        {
+          "screen": "invoice",
+          "start": 22.65,
+          "dur": 3.4
+        },
+        {
+          "screen": "export",
+          "start": 26.05,
+          "dur": 3
+        }
+      ]
+    },
+    {
+      "type": "cta",
+      "start": 28.7,
+      "dur": 2.9,
+      "screens": null
+    }
+  ],
+  "music": {
+    "bpm": 98.2,
+    "mood": "warm",
+    "key_shift": -2
+  },
+  "bytes": 2318977
+}

@@ -1,0 +1,54 @@
+{
+  "ok": true,
+  "engine": "blocks",
+  "problems": [],
+  "notes": [],
+  "total": 22.08,
+  "timeline": [
+    {
+      "type": "hook",
+      "start": 0,
+      "dur": 3.2
+    },
+    {
+      "type": "scene",
+      "start": 2.85,
+      "dur": 3.43
+    },
+    {
+      "type": "scene",
+      "start": 5.93,
+      "dur": 2.6
+    },
+    {
+      "type": "reveal",
+      "start": 8.18,
+      "dur": 2.2
+    },
+    {
+      "type": "scene",
+      "start": 10.03,
+      "dur": 4.45
+    },
+    {
+      "type": "scene",
+      "start": 14.13,
+      "dur": 3.2
+    },
+    {
+      "type": "scene",
+      "start": 16.98,
+      "dur": 2.4
+    },
+    {
+      "type": "cta",
+      "start": 19.03,
+      "dur": 3
+    }
+  ],
+  "files": [
+    "video.mp4",
+    "video_4x5.mp4"
+  ],
+  "bytes": 10632257
+}

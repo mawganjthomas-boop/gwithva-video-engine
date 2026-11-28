@@ -1,0 +1,61 @@
+{
+  "ok": true,
+  "engine": "blocks",
+  "problems": [],
+  "notes": [],
+  "total": 27.26,
+  "timeline": [
+    {
+      "type": "hook",
+      "start": 0,
+      "dur": 4.35
+    },
+    {
+      "type": "scene",
+      "start": 3.93,
+      "dur": 6.45
+    },
+    {
+      "type": "scene",
+      "start": 9.96,
+      "dur": 3.98
+    },
+    {
+      "type": "scene",
+      "start": 13.52,
+      "dur": 3.6
+    },
+    {
+      "type": "scene",
+      "start": 16.7,
+      "dur": 3.4
+    },
+    {
+      "type": "scene",
+      "start": 19.68,
+      "dur": 3.35
+    },
+    {
+      "type": "cta",
+      "start": 22.61,
+      "dur": 4.6
+    }
+  ],
+  "music": {
+    "track": "puzzle-marimba",
+    "title": "Puzzle Focus Marimba",
+    "credit": "Music: \"Puzzle Focus Marimba\" by BudgetPixel AI (https://budgetpixel.com/background-music/puzzle-focus-marimba-ca2833c6), CC BY 4.0"
+  },
+  "music_credit": "Music: \"Puzzle Focus Marimba\" by BudgetPixel AI (https://budgetpixel.com/background-music/puzzle-focus-marimba-ca2833c6), CC BY 4.0",
+  "files": [
+    "video.mp4",
+    "video_4x5.mp4",
+    "video_hook2.mp4",
+    "video_hook2_4x5.mp4",
+    "video_hook3.mp4",
+    "video_hook3_4x5.mp4",
+    "video_short.mp4",
+    "video_short_4x5.mp4"
+  ],
+  "bytes": 13712139
+}
